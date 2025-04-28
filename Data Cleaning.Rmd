@@ -13,6 +13,29 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-```{r}
+```{r warning=FALSE}
 source("/Users/camsmithers/Desktop/Camalytics/NBA/DataPrep.R")
 ```
+
+### Team Level Cleaning
+
+```{r}
+#Adjusted Shooting
+adj_shooting_team <- adj_shooting_stats %>%
+    filter(name == "Team Totals") %>%
+    select(-obs_num, -name, -postion, -age, -games, -minutes, -awards) %>%
+    select(team_id, everything()) %>%
+    separate(team_id, into = c("team", "year"), sep = "-")
+
+```
+
+```{r}
+advanced_box_team <- advanced_box_stats %>%
+    select(-last_col()) %>%
+    fill(opp_id, .direction = "down")
+```
+
+```{r}
+
+```
+

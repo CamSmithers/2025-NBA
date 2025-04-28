@@ -57,9 +57,10 @@ names(basic_box_stats) <- basic_box_names
 adj_shooting_names <- c("obs_num", "name", "age", "postion", "games", "starts", 
                         "minutes", "fg_pct", "twofg_pct", "threefg_pct", 
                         "efg_pct", "ft_pct", "ts_pct", "ftar", "three_par", 
-                        "adj_fg_pct", "adj_2fg_pct", "adj_3fg_pct", "adj_ft_pct", 
+                        "adj_fg_pct", "adj_2fg_pct", "adj_3fg_pct", "adj_efg_pct",
+                        "adj_ft_pct", 
                         "adj_ts_pct", "adj_ftar", "adj_3par", "fg_add_pts", 
-                        "ts_add_pts", "awards", "team_id", "file_id")
+                        "ts_add_pts", "awards", "team_id")
 names(adj_shooting_stats) <- adj_shooting_names
 
 advanced_names <- c("obs_num", "name", "age", "postion", "games", "starts", 
