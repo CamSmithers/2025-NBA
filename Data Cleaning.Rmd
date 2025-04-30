@@ -25,17 +25,80 @@ adj_shooting_team <- adj_shooting_stats %>%
     filter(name == "Team Totals") %>%
     select(-obs_num, -name, -postion, -age, -games, -minutes, -awards) %>%
     select(team_id, everything()) %>%
-    separate(team_id, into = c("team", "year"), sep = "-")
-
+    separate(team_id, into = c("team", "year"), sep = "-") %>%
+    mutate(year = sub("\\..*", "", year))
 ```
 
 ```{r}
 advanced_box_team <- advanced_box_stats %>%
     select(-last_col()) %>%
-    fill(opp_id, .direction = "down")
+    fill(opp_id, .direction = "down") %>%
+    filter(name == "Team Totals") %>%
+    mutate(
+        team = str_extract(team_id, "(?<=box-).*?(?=-game-advanced)"),
+        opponent = str_extract(opp_id, "(?<=box-).*?(?=-game-advanced)"), 
+        date_str = substr(game_id, 1, 8),
+        gamedate = as.Date(date_str, format = "%Y%m%d")) %>%
+    select(-obs_num, -name, -box_plusminus, -team_id, -game_id, -opp_id, -date_str) %>%
+    select(gamedate, team, opponent, everything()) %>%
+    mutate(
+        overtime = if_else(min > 240, 1, 0),
+        win = if_else(offrating > defrating, 1, 0))
 ```
 
 ```{r}
-
+basic_box_team <- basic_box_stats %>%
+    fill(opp_id, .direction = "down") %>%
+    filter(name == "Team Totals") %>%
+    mutate(
+        team = str_extract(team_id, "(?<=box-).*?(?=-game-basic)"),
+        opponent = str_extract(opp_id, "(?<=box-).*?(?=-game-basic)"), 
+        date_str = substr(game_id, 1, 8),
+        gamedate = as.Date(date_str, format = "%Y%m%d")) %>%
+    select(-obs_num, -name, -gamescore, -plusminus, -team_id, -game_id, -opp_id, 
+           -date_str) %>%
+    select(gamedate, team, opponent, everything())
 ```
 
+```{r}
+general_team <- general_stats %>%
+    select(-obs_num, -games) %>%
+    separate(file_id, into = c("team", "year"), sep = "-") %>%
+    mutate(
+        year = sub("\\..*", "", year),
+        row_id = row_number(),
+        manipulate = row_id %% 8 %in% c(7, 0),
+        obs_type = if_else(manipulate, paste("Opponent", obs_type), obs_type)
+        ) %>%
+    select(-row_id, -manipulate) %>%
+    select(team, year, everything()) %>%
+    rename("min"="minutes")
+
+general_total <- general_team %>%
+    filter(obs_type == "Team" | obs_type == "Opponent") %>%
+    rename_with(~ paste0(.x, "_tot"), .cols = -c(team, year))
+
+general_pergame <- general_team %>%
+    filter(obs_type == "Team/G" | obs_type == "Opponent/G") %>%
+    mutate(obs_type = case_when(
+        obs_type == "Team/G" ~ "Team",
+        obs_type == "Opponent/G" ~ "Opponent")) %>%
+    rename_with(~ paste0(.x, "_pg"), .cols = -c(team, year))
+
+general_lg_rank <- general_team %>%
+    filter(obs_type == "Lg Rank" | obs_type == "Opponent Lg Rank") %>%
+    mutate(obs_type = case_when(
+        obs_type == "Lg Rank" ~ "Team",
+        obs_type == "Opponent Lg Rank" ~ "Opponent")) %>%
+    rename_with(~ paste0(.x, "_lgrk"), .cols = -c(team, year))
+
+general_yr2yr <- general_team %>%
+    filter(obs_type == "Year/Year" | obs_type == "Opponent Year/Year") %>%
+    mutate(across(
+        -c(team, year, obs_type, fg_pct, threefg_pct, twofg_pct, ft_pct),
+        ~ as.numeric(gsub("%", "", .)))) %>%
+    mutate(obs_type = case_when(
+        obs_type == "Year/Year" ~ "Team",
+        obs_type == "Opponent Year/Year" ~ "Opponent")) %>%
+    rename_with(~ paste0(.x, "_yr2yr"), .cols = -c(team, year))
+```
