@@ -1,25 +1,6 @@
----
-title: "Data Cleaning"
-author: "Cam Smithers"
-date: "`r Sys.Date()`"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r}
 library(tidyverse)
-```
-
-```{r warning=FALSE}
 source("/Users/camsmithers/Desktop/Camalytics/NBA/DataPrep.R")
-```
 
-### Team Level Cleaning
-
-```{r}
 #Adjusted Shooting
 adj_shooting_team <- adj_shooting_stats %>%
     filter(name == "Team Totals") %>%
@@ -27,9 +8,8 @@ adj_shooting_team <- adj_shooting_stats %>%
     select(team_id, everything()) %>%
     separate(team_id, into = c("team", "year"), sep = "-") %>%
     mutate(year = sub("\\..*", "", year))
-```
 
-```{r}
+#Advanced Box
 advanced_box_team <- advanced_box_stats %>%
     select(-last_col()) %>%
     fill(opp_id, .direction = "down") %>%
@@ -44,9 +24,8 @@ advanced_box_team <- advanced_box_stats %>%
     mutate(
         overtime = if_else(min > 240, 1, 0),
         win = if_else(offrating > defrating, 1, 0))
-```
 
-```{r}
+#Basic Box
 basic_box_team <- basic_box_stats %>%
     fill(opp_id, .direction = "down") %>%
     filter(name == "Team Totals") %>%
@@ -58,9 +37,8 @@ basic_box_team <- basic_box_stats %>%
     select(-obs_num, -name, -gamescore, -plusminus, -team_id, -game_id, -opp_id, 
            -date_str) %>%
     select(gamedate, team, opponent, everything())
-```
 
-```{r}
+#General Statistics
 general_team <- general_stats %>%
     select(-obs_num, -games) %>%
     separate(file_id, into = c("team", "year"), sep = "-") %>%
@@ -69,7 +47,7 @@ general_team <- general_stats %>%
         row_id = row_number(),
         manipulate = row_id %% 8 %in% c(7, 0),
         obs_type = if_else(manipulate, paste("Opponent", obs_type), obs_type)
-        ) %>%
+    ) %>%
     select(-row_id, -manipulate) %>%
     select(team, year, everything()) %>%
     rename("min"="minutes")
@@ -101,9 +79,8 @@ general_yr2yr <- general_team %>%
         obs_type == "Year/Year" ~ "Team",
         obs_type == "Opponent Year/Year" ~ "Opponent")) %>%
     rename_with(~ paste0(.x, "_yr2yr"), .cols = -c(team, year))
-```
 
-```{r}
+#Advanced Statistics
 advanced_gen_team <- advanced_stats %>%
     filter(name == "Team Totals") %>%
     select(-c(obs_num, age, postion, games, player_effrtg, oreb_pct, dreb_pct, treb_pct, 
@@ -112,4 +89,3 @@ advanced_gen_team <- advanced_stats %>%
     separate(file_id, into = c("team", "year"), sep = "-") %>%
     mutate(year = sub("\\..*", "", year)) %>%
     select(team, year, everything())
-```
