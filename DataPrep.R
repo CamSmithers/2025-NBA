@@ -120,7 +120,15 @@ totals_names <- c("obs_num", "name", "age", "games", "starts",
                   "file_id")
 names(totals_stats) <- totals_names
 
-names(playoff_adj_shooting_stats) <- adj_shooting_names
+playoff_adj_shooting_names <- c("obs_num", "name", "age", "pos", "games", 
+                                "starts", "min", "fg_pct", "twofg_pct", 
+                                "threefg_pct", "efg_pct", "ft_pct", "ts_pct", 
+                                "ftar", "three_par", "adj_fg_pct", 
+                                "adj_2fg_pct", "adj_3fg_pct", "adj_efg_pct", 
+                                "adj_ft_pct", "adj_ts_pct", "adj_ftar", 
+                                "adj_3par", "awards", "file_id")
+names(playoff_adj_shooting_stats) <- playoff_adj_shooting_names
+
 names(playoff_advanced_stats) <- advanced_names
 names(playoff_playbyplay_stats) <- playbyplay_names
 names(playoff_per36min_stats) <- per36min_names
