@@ -1,6 +1,8 @@
 library(tidyverse)
 source("/Users/camsmithers/Desktop/Camalytics/NBA/DataPrep.R")
 #------------------------------------------------------------------------------#
+#Part 1
+#------------------------------------------------------------------------------#
 #General Statistics
 general_team <- general_stats %>%
     select(-obs_num, -games) %>%
@@ -13,8 +15,7 @@ general_team <- general_stats %>%
     ) %>%
     select(-row_id, -manipulate) %>%
     select(team, year, everything()) %>%
-    rename("min"="minutes") %>%
-    rename_with( ~paste0(.x, "_gen"), .cols = -c("team", "year"))
+    rename("min"="minutes")
 
 general_total <- general_team %>%
     filter(obs_type == "Team" | obs_type == "Opponent") %>%
@@ -43,6 +44,9 @@ general_yr2yr <- general_team %>%
         obs_type == "Year/Year" ~ "Team",
         obs_type == "Opponent Year/Year" ~ "Opponent")) %>%
     rename_with(~ paste0(.x, "_gen_yr2yr"), .cols = -c(team, year))
+
+general_team <- general_team %>%
+    rename_with(~ paste0(.x, "_gen"), .cols = -c(team, year))
 #------------------------------------------------------------------------------#
 #Basic Box Scores
 basic_box_team <- basic_box_stats %>%
@@ -193,3 +197,76 @@ playoff_totals_team <- playoff_totals_stats %>%
     separate(file_id, into = c("team", "year"), sep = "-") %>%
     mutate(year = sub("\\..*", "", year)) %>%
     rename_with(~ paste0("post_", .x, "_tot"), .cols = -c(team, year))
+#------------------------------------------------------------------------------#
+#Part 2
+#------------------------------------------------------------------------------#
+#Team Data
+general_pergame_fnl <- general_pergame %>%
+    mutate(
+        obs_type_gen_pg = 
+            if_else(obs_type_gen_pg == "Opponent", "Opp", obs_type_gen_pg)) %>%
+    select(-min_gen_pg) %>%
+    pivot_wider(
+        id_cols = c(team, year),
+        names_from = obs_type_gen_pg,
+        values_from = -c(team, year, obs_type_gen_pg),
+        names_glue = "{.value}_{tolower(obs_type_gen_pg)}"
+    ) %>%
+    select(team, year, ends_with("_team"), ends_with("_opp"))
+general_lg_rank_fnl <- general_lg_rank %>%
+    mutate(
+        obs_type_gen_lgrk = 
+            if_else(obs_type_gen_lgrk == "Opponent", "Opp", obs_type_gen_lgrk)) %>%
+    select(-min_gen_lgrk) %>%
+    pivot_wider(
+        id_cols = c(team, year),
+        names_from = obs_type_gen_lgrk,
+        values_from = -c(team, year, obs_type_gen_lgrk),
+        names_glue = "{.value}_{tolower(obs_type_gen_lgrk)}"
+    ) %>%
+    select(team, year, ends_with("_team"), ends_with("_opp"))
+general_yr2yr_fnl <- general_yr2yr %>%
+    mutate(
+        obs_type_gen_yr2yr = 
+            if_else(obs_type_gen_yr2yr == "Opponent", "Opp", obs_type_gen_yr2yr)) %>%
+    select(-min_gen_yr2yr) %>%
+    pivot_wider(
+        id_cols = c(team, year),
+        names_from = obs_type_gen_yr2yr,
+        values_from = -c(team, year, obs_type_gen_yr2yr),
+        names_glue = "{.value}_{tolower(obs_type_gen_yr2yr)}"
+    ) %>%
+    select(team, year, ends_with("_team"), ends_with("_opp"))
+
+both_box_scores <- basic_box_team %>%
+    left_join(advanced_box_team, by = c("gamedate", "team",
+                                        "opponent_bsc_box"="opponent_adv_box",
+                                        "min_bsc_box"="min_adv_box")) %>%
+    select(-usage_rate_adv_box) %>%
+    rename("win_loss" = "win_adv_box")
+
+misc_full <- misc_team %>%
+    left_join(misc_rank, by = c("team", "year"))
+
+adj_shooting_full <- adj_shooting_team %>%
+    select(-starts_adj_sht) %>%
+    left_join(playoff_adj_shooting_team, by = c("team", "year"))
+
+shooting_full <- shooting_team %>%
+    left_join(playoff_shooting_team, by = c("team", "year"))
+
+advanced_gen_full <- advanced_gen_team %>%
+    left_join(playoff_advanced_gen_team, by = c("team", "year"))
+
+pergame_full <- pergame_team %>%
+    left_join(playoff_pergame_team, by = c("team", "year"))
+
+playbyplay_full <- playbyplay_team %>%
+    left_join(playoff_playbyplay_team, by = c("team", "year"))
+
+team_data_list <- list(general_pergame_fnl, general_lg_rank_fnl, 
+                       general_yr2yr_fnl, misc_full, adj_shooting_full, 
+                       shooting_full, advanced_gen_full, pergame_full, 
+                       playbyplay_full)
+
+team_level_data <- reduce(team_data_list, left_join, by = c("team", "year"))

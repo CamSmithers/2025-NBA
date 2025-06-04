@@ -17,6 +17,58 @@ library(tidyverse)
 source("/Users/camsmithers/Desktop/Camalytics/NBA/DataPrep.R")
 ```
 
+------------------------------------------------------------------------
+
+### General Statistics
+
+```{r}
+
+```
+
+### Basic & Advanced Box Scores
+
+```{r}
+
+```
+
+### Misc Statistics
+
+```{r}
+
+```
+
+### Adjusted Shooting
+
+```{r}
+
+```
+
+### Shooting
+
+```{r}
+
+```
+
+### Advanced Statistics
+
+```{r}
+
+```
+
+### Per Game Statistics
+
+```{r}
+
+```
+
+### Play-by-Play Statistics
+
+```{r}
+
+```
+
+------------------------------------------------------------------------
+
 ### Player Name Cleaning
 
 ```{r}
@@ -32,11 +84,37 @@ basic_box_player2 <- basic_box_player %>%
         name == "Alen SmailagiÄ" ~ "Alen Smailagic",
         name == "Alperen ÅengÃ¼n" ~ "Alperen Sengun",
         name == "AnÅ¾ejs PaseÄÅiks" ~ "Anžejs Pasečņiks",
+        name == "Anderson VarejÃ£o" ~ "Anderson Varejao",
         name == "Boban MarjanoviÄ"~ "Boban Marjanović",
         name == "Bogdan BogdanoviÄ" ~ "Bogdan Bogdanović",
         name == "Bojan BogdanoviÄ" ~ "Bojan Bogdanović",
         name == "Cristiano FelÃ­cio" ~ "Cristiano Felicio",
-        name == "Dario Å ariÄ" ~ "Dario Šarić"
+        name == "Dario Å ariÄ" ~ "Dario Šarić", #No Fix
+        name == "DÄvis BertÄns" ~ "Dāvis Bertāns",
+        name == "Dennis SchrÃ¶der" ~ "Dennis Schröder",
+        name == "Ersan Ä°lyasova" ~ "Ersan Ilyasova",
+        name == "Filip PetruÅ¡ev" ~ "Filip Petrusev",
+        name == "Goran DragiÄ" ~ "Goran Dragic",
+        name == "Jonas ValanÄiÅ«nas" ~ "Jonas Valančiūnas",
+        name == "Juancho HernangÃ³mez" ~ "Juancho Hernangomez",
+        name == "Jusuf NurkiÄ" ~ "Jusuf Nurkić",
+        name == "Karim ManÃ©" ~ "Karim Mane",
+        name == "Kristaps PorziÅÄ£is" ~ "Kristaps Porziņģis",
+        name == "Lester QuiÃ±ones" ~ "Lester Quinones",
+        name == "Luka Å amaniÄ" ~ "Luka Samanic", #No Fix
+        name == "Luka DonÄiÄ" ~ "Luka Dončić",
+        name == "MÃ£ozinha Pereira" ~ "Maozinha Pereira",
+        name == "Moussa DiabatÃ©" ~ "Moussa Diabaté",
+        name == "NicolÃ² Melli" ~ "Nicolo Melli",
+        name == "Nikola JokiÄ" ~ "Nikola Jokić",
+        name == "Nikola JoviÄ" ~ "Nikola Jović",
+        name == "Nikola VuÄeviÄ" ~ "Nikola Vučević",
+        name == "ThÃ©o Maledon" ~ "Theo Maledon",
+        name == "TimothÃ© Luwawu-Cabarrot" ~ "Timothe Luwawu-Cabarrot",
+        name == "TomÃ¡Å¡ SatoranskÃ½" ~ "Tomas Satoransky",
+        name == "Vasilije MiciÄ" ~ "Vasilije Micić",
+        name == "Vlatko ÄanÄar" ~ "Vlatko Čančar",
+        name == "Willy HernangÃ³mez" ~ "Willy Hernangomez",
+        TRUE ~ name
     ))
 ```
-
