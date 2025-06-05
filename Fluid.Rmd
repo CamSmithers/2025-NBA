@@ -1,0 +1,147 @@
+---
+title: "Fluid R Markdown File"
+author: "Cam Smithers"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+------------------------------------------------------------------------
+
+```{r}
+basic_box_player <- basic_box_stats %>%
+    fill(opp_id, .direction = "down") %>%
+    filter(name != "Team Totals" & name != "Reserves") %>%
+    mutate(
+        team = str_extract(team_id, "(?<=box-).*?(?=-game-basic)"),
+        opponent = str_extract(opp_id, "(?<=box-).*?(?=-game-basic)"), 
+        date_str = substr(game_id, 1, 8),
+        gamedate = as.Date(date_str, format = "%Y%m%d"),
+        homeaway = if_else(str_detect(game_id, team), 1, 0),
+        min = as.numeric(sub(":.*", "", min))) %>%
+    select(-obs_num, -gamescore, -plusminus, -team_id, -game_id, -opp_id, 
+           -date_str) %>%
+    select(gamedate, homeaway, everything()) %>%
+    mutate(across(-gamedate, ~ if_else(
+        .x == "Did Not Play"| .x == "Did Not Dress"|
+            .x == "Not With Team"| .x == "Player Suspended", NA, .x)))
+
+advanced_box_player <- advanced_box_stats %>%
+    select(-last_col()) %>%
+    fill(opp_id, .direction = "down") %>%
+    filter(name != "Team Totals" & name != "Reserves") %>%
+    mutate(
+        team = str_extract(team_id, "(?<=box-).*?(?=-game-advanced)"),
+        opponent = str_extract(opp_id, "(?<=box-).*?(?=-game-advanced)"), 
+        date_str = substr(game_id, 1, 8),
+        gamedate = as.Date(date_str, format = "%Y%m%d"),
+        homeaway = if_else(str_detect(game_id, team), 1, 0),
+        min = as.numeric(sub(":.*", "", min))) %>%
+    select(-obs_num, -team_id, -opp_id, -date_str, -game_id) %>%
+    select(gamedate, team, opponent, everything()) %>%
+    mutate(across(-gamedate, ~ if_else(
+        .x == "Did Not Play"| .x == "Did Not Dress"|
+            .x == "Not With Team"| .x == "Player Suspended", NA, .x)))
+full_box_player <- basic_box_player %>%
+    left_join(advanced_box_player, 
+              by = c("gamedate", "homeaway", "name", "min", "team", "opponent")) %>%
+    mutate(season = case_when(
+        gamedate >= as.Date("2020-12-22") & 
+            gamedate <= as.Date("2021-07-20") ~ "2020/2021",
+        gamedate >= as.Date("2021-10-19") & 
+            gamedate <= as.Date("2022-06-16") ~ "2021/2022",
+        gamedate >= as.Date("2022-10-18") & 
+            gamedate <= as.Date("2023-06-12") ~ "2022/2023",
+        gamedate >= as.Date("2023-10-24") & 
+            gamedate <= as.Date("2024-06-17") ~ "2023/2024")) %>%
+    mutate(across(
+        -all_of(c("gamedate", "homeaway", "name", "min", "team", "opponent", "season")),
+        ~ as.numeric(.)))
+```
+
+```{r}
+player_avg_min <- full_box_player %>%
+    filter(!is.na(min)) %>%
+    group_by(season, name, team) %>%
+    summarize(avg_year_min = round(mean(min), 1), .groups = "drop") %>%
+    mutate(player_role = case_when(
+        avg_year_min >= 28 ~ "essential",
+        avg_year_min < 28 & avg_year_min >= 20 ~ "major",
+        avg_year_min < 20 & avg_year_min >= 14 ~ "moderate",
+        avg_year_min < 14 & avg_year_min >= 10 ~ "minor",
+        avg_year_min < 10 ~ "none"
+    ))
+```
+
+```{r}
+player_avg_fga <- full_box_player %>%
+    filter(!is.na(fga)) %>%
+    group_by(season, name, team) %>%
+    summarize(avg_year_fga = round(mean(fga), 1), .groups = "drop")
+```
+
+```{r}
+player_avg_usage <- full_box_player %>%
+    filter(!is.na(usage_rate) & min >= 14) %>%
+    group_by(season, name, team) %>%
+    summarize(avg_year_usage = round(mean(usage_rate), 1), .groups = "drop")
+```
+
+------------------------------------------------------------------------
+
+### Player Name Cleaning
+
+```{r}
+basic_box_player <- basic_box_stats %>%
+  filter(!name %in% c("Team Totals", "Reserves", "Starters")) %>%
+  select(name) %>%
+  distinct()
+```
+
+```{r}
+basic_box_player2 <- basic_box_player %>%
+    mutate(name = case_when(
+        name == "Alen SmailagiÄ" ~ "Alen Smailagic",
+        name == "Alperen ÅengÃ¼n" ~ "Alperen Sengun",
+        name == "AnÅ¾ejs PaseÄÅiks" ~ "Anžejs Pasečņiks",
+        name == "Anderson VarejÃ£o" ~ "Anderson Varejao",
+        name == "Boban MarjanoviÄ"~ "Boban Marjanović",
+        name == "Bogdan BogdanoviÄ" ~ "Bogdan Bogdanović",
+        name == "Bojan BogdanoviÄ" ~ "Bojan Bogdanović",
+        name == "Cristiano FelÃ­cio" ~ "Cristiano Felicio",
+        name == "Dario Å ariÄ" ~ "Dario Šarić", #No Fix
+        name == "DÄvis BertÄns" ~ "Dāvis Bertāns",
+        name == "Dennis SchrÃ¶der" ~ "Dennis Schröder",
+        name == "Ersan Ä°lyasova" ~ "Ersan Ilyasova",
+        name == "Filip PetruÅ¡ev" ~ "Filip Petrusev",
+        name == "Goran DragiÄ" ~ "Goran Dragic",
+        name == "Jonas ValanÄiÅ«nas" ~ "Jonas Valančiūnas",
+        name == "Juancho HernangÃ³mez" ~ "Juancho Hernangomez",
+        name == "Jusuf NurkiÄ" ~ "Jusuf Nurkić",
+        name == "Karim ManÃ©" ~ "Karim Mane",
+        name == "Kristaps PorziÅÄ£is" ~ "Kristaps Porziņģis",
+        name == "Lester QuiÃ±ones" ~ "Lester Quinones",
+        name == "Luka Å amaniÄ" ~ "Luka Samanic", #No Fix
+        name == "Luka DonÄiÄ" ~ "Luka Dončić",
+        name == "MÃ£ozinha Pereira" ~ "Maozinha Pereira",
+        name == "Moussa DiabatÃ©" ~ "Moussa Diabaté",
+        name == "NicolÃ² Melli" ~ "Nicolo Melli",
+        name == "Nikola JokiÄ" ~ "Nikola Jokić",
+        name == "Nikola JoviÄ" ~ "Nikola Jović",
+        name == "Nikola VuÄeviÄ" ~ "Nikola Vučević",
+        name == "ThÃ©o Maledon" ~ "Theo Maledon",
+        name == "TimothÃ© Luwawu-Cabarrot" ~ "Timothe Luwawu-Cabarrot",
+        name == "TomÃ¡Å¡ SatoranskÃ½" ~ "Tomas Satoransky",
+        name == "Vasilije MiciÄ" ~ "Vasilije Micić",
+        name == "Vlatko ÄanÄar" ~ "Vlatko Čančar",
+        name == "Willy HernangÃ³mez" ~ "Willy Hernangomez",
+        TRUE ~ name
+    ))
+```

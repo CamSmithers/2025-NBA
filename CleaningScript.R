@@ -72,7 +72,8 @@ advanced_box_team <- advanced_box_stats %>%
         opponent = str_extract(opp_id, "(?<=box-).*?(?=-game-advanced)"), 
         date_str = substr(game_id, 1, 8),
         gamedate = as.Date(date_str, format = "%Y%m%d")) %>%
-    select(-obs_num, -name, -box_plusminus, -team_id, -game_id, -opp_id, -date_str) %>%
+    mutate(homeaway = if_else(str_detect(game_id, team), "home", "away")) %>%
+    select(-obs_num, -name, -box_plusminus, -team_id, -opp_id, -date_str, -game_id) %>%
     select(gamedate, team, opponent, everything()) %>%
     mutate(
         overtime = if_else(min > 240, 1, 0),
@@ -270,3 +271,8 @@ team_data_list <- list(general_pergame_fnl, general_lg_rank_fnl,
                        playbyplay_full)
 
 team_level_data <- reduce(team_data_list, left_join, by = c("team", "year"))
+
+#saveRDS(team_level_data, 
+#        file = "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_level_data.rds")
+#saveRDS(both_box_scores, 
+#        file = "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_score_full.rds")
