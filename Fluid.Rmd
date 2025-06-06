@@ -16,6 +16,10 @@ library(tidyverse)
 ------------------------------------------------------------------------
 
 ```{r}
+team_level_data_fnl <- readRDS("/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_level_data.rds")
+```
+
+```{r}
 basic_box_player <- basic_box_stats %>%
     fill(opp_id, .direction = "down") %>%
     filter(name != "Team Totals" & name != "Reserves") %>%
@@ -54,44 +58,67 @@ full_box_player <- basic_box_player %>%
               by = c("gamedate", "homeaway", "name", "min", "team", "opponent")) %>%
     mutate(season = case_when(
         gamedate >= as.Date("2020-12-22") & 
-            gamedate <= as.Date("2021-07-20") ~ "2020/2021",
+            gamedate <= as.Date("2021-07-20") ~ 2021,
         gamedate >= as.Date("2021-10-19") & 
-            gamedate <= as.Date("2022-06-16") ~ "2021/2022",
+            gamedate <= as.Date("2022-06-16") ~ 2022,
         gamedate >= as.Date("2022-10-18") & 
-            gamedate <= as.Date("2023-06-12") ~ "2022/2023",
+            gamedate <= as.Date("2023-06-12") ~ 2023,
         gamedate >= as.Date("2023-10-24") & 
-            gamedate <= as.Date("2024-06-17") ~ "2023/2024")) %>%
+            gamedate <= as.Date("2024-06-17") ~ 2024)) %>%
     mutate(across(
-        -all_of(c("gamedate", "homeaway", "name", "min", "team", "opponent", "season")),
+        -all_of(c("gamedate", "homeaway", "name", "min", "team", "opponent")),
         ~ as.numeric(.)))
 ```
 
 ```{r}
-player_avg_min <- full_box_player %>%
-    filter(!is.na(min)) %>%
-    group_by(season, name, team) %>%
-    summarize(avg_year_min = round(mean(min), 1), .groups = "drop") %>%
-    mutate(player_role = case_when(
-        avg_year_min >= 28 ~ "essential",
-        avg_year_min < 28 & avg_year_min >= 20 ~ "major",
-        avg_year_min < 20 & avg_year_min >= 14 ~ "moderate",
-        avg_year_min < 14 & avg_year_min >= 10 ~ "minor",
-        avg_year_min < 10 ~ "none"
-    ))
+team_to_player <- team_level_data %>%
+    select(team, year, fga_gen_pg_team, fta_gen_pg_team, oreb_gen_pg_team, dreb_gen_pg_team,
+           pts_gen_pg_team) %>%
+    mutate(across(
+        -all_of(c("team")),
+        ~ as.numeric(.)))
 ```
 
 ```{r}
-player_avg_fga <- full_box_player %>%
-    filter(!is.na(fga)) %>%
+player_avg_stats_role <- full_box_player %>%
     group_by(season, name, team) %>%
-    summarize(avg_year_fga = round(mean(fga), 1), .groups = "drop")
+    summarize(
+        avg_min = round(mean(min, na.rm = TRUE), 1),
+        avg_fga = round(mean(fga, na.rm = TRUE), 1),
+        avg_fta = round(mean(fta, na.rm = TRUE), 1),
+        avg_oreb = round(mean(oreb, na.rm = TRUE), 1),
+        avg_dreb = round(mean(dreb, na.rm = TRUE), 1),
+        avg_pts = round(mean(pts, na.rm = TRUE), 1),
+        avg_usage = round(mean(usage_rate, na.rm = TRUE), 1), .groups = "drop")
 ```
 
 ```{r}
-player_avg_usage <- full_box_player %>%
-    filter(!is.na(usage_rate) & min >= 14) %>%
-    group_by(season, name, team) %>%
-    summarize(avg_year_usage = round(mean(usage_rate), 1), .groups = "drop")
+player_significance <- player_avg_stats_role %>%
+    left_join(team_to_player, by = c("team", "season"="year"))
+
+player_significance_2 <- player_significance %>%
+    mutate(
+        min_ratio = round(100 * (avg_min/48), 1),
+        fga_ratio = round(100 * (avg_fga/fga_gen_pg_team), 1),
+        fta_ratio = round(100 * (avg_fta/fta_gen_pg_team), 1),
+        oreb_ratio = round(100 * (avg_oreb/oreb_gen_pg_team), 1),
+        dreb_ratio = round(100 * (avg_dreb/dreb_gen_pg_team), 1),
+        pts_ratio = round(100 * (avg_pts/pts_gen_pg_team), 1)
+    )
+```
+
+------------------------------------------------------------------------
+
+### Words to Code
+
+Player Comparisons
+
+1.  For each team in each year which player leads their team in a given statistic
+
+2.  What is the league average for that statistic and what is the players percent difference from the mean
+
+```{r}
+
 ```
 
 ------------------------------------------------------------------------
