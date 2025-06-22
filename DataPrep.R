@@ -54,7 +54,7 @@ basic_box_names <- c("obs_num", "name", "min", "fg", "fga", "fg_pct",
                      "game_id", "opp_id")
 names(basic_box_stats) <- basic_box_names
 
-adj_shooting_names <- c("obs_num", "name", "age", "postion", "games", "starts", 
+adj_shooting_names <- c("obs_num", "name", "age", "pos", "games", "starts", 
                         "minutes", "fg_pct", "twofg_pct", "threefg_pct", 
                         "efg_pct", "ft_pct", "ts_pct", "ftar", "three_par", 
                         "adj_fg_pct", "adj_2fg_pct", "adj_3fg_pct", "adj_efg_pct",
@@ -63,7 +63,7 @@ adj_shooting_names <- c("obs_num", "name", "age", "postion", "games", "starts",
                         "ts_add_pts", "awards", "team_id")
 names(adj_shooting_stats) <- adj_shooting_names
 
-advanced_names <- c("obs_num", "name", "age", "postion", "games", "starts", 
+advanced_names <- c("obs_num", "name", "age", "pos", "games", "starts", 
                     "minutes", "player_effrtg", "ts_pct", "three_par", "ftar", 
                     "oreb_pct", "dreb_pct", "treb_pct", "ast_pct", "stl_pct", 
                     "blk_pct", "tov_pct", "usage_rate", "off_ws", "def_ws", 
@@ -71,7 +71,7 @@ advanced_names <- c("obs_num", "name", "age", "postion", "games", "starts",
                     "box_plusminus", "vorp", "awards", "file_id")
 names(advanced_stats) <- advanced_names
 
-playbyplay_names <- c("obs_num", "name", "age", "postion", "games", "starts", 
+playbyplay_names <- c("obs_num", "name", "age", "pos", "games", "starts", 
                       "minutes", "pg_min", "sg_min", "sf_min", "pf_min", "c_min", 
                       "oncourt_per100poss", "on_off_net_per100poss", 
                       "tov_by_badpass", "tov_by_lostball", "pf_shoot", 
@@ -79,7 +79,7 @@ playbyplay_names <- c("obs_num", "name", "age", "postion", "games", "starts",
                       "pts_genby_ast", "and1", "blkd", "awards", "file_id")
 names(playbyplay_stats) <- playbyplay_names
 
-per36min_names <- c("obs_num", "name", "age", "postion", "games", "starts", 
+per36min_names <- c("obs_num", "name", "age", "pos", "games", "starts", 
                     "minutes", "fg", "fga", "fg_pct", "threefg", "threefga", 
                     "threefg_pct", "twofg", "twofga", "twofg_pct", "efg_pct", 
                     "ft", "fta", "ft_pct", "oreb", "dreb", "treb", "ast", 
@@ -94,7 +94,7 @@ per100poss_names <- c("obs_num", "name", "age", "games", "starts",
                       "awards", "file_id")
 names(per100poss_stats) <- per100poss_names
 
-pergame_names <- c("obs_num", "name", "age", "postion", "games", "starts", 
+pergame_names <- c("obs_num", "name", "age", "pos", "games", "starts", 
                     "minutes", "fg", "fga", "fg_pct", "threefg", "threefga", 
                     "threefg_pct", "twofg", "twofga", "twofg_pct", "efg_pct", 
                     "ft", "fta", "ft_pct", "oreb", "dreb", "treb", "ast", 

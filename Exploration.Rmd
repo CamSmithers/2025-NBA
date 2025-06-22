@@ -1,0 +1,50 @@
+---
+title: "Exploration"
+author: "Cam Smithers"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+team_box_scores <- readRDS("/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
+
+team_season_stats <- readRDS("/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
+```
+
+```{r}
+team_box_scores_2 <- team_box_scores %>%
+    mutate(across(
+        -all_of(c("gamedate", "homeaway", "team", "opponent")),
+        ~ as.numeric(.))) %>%
+    mutate(season = case_when(
+        gamedate >= as.Date("2020-12-22") & 
+            gamedate <= as.Date("2021-07-20") ~ 2021,
+        gamedate >= as.Date("2021-10-19") & 
+            gamedate <= as.Date("2022-06-16") ~ 2022,
+        gamedate >= as.Date("2022-10-18") & 
+            gamedate <= as.Date("2023-06-12") ~ 2023,
+        gamedate >= as.Date("2023-10-24") & 
+            gamedate <= as.Date("2024-06-17") ~ 2024))
+
+team_season_stats_2 <- team_season_stats %>%
+    mutate(across(
+        -all_of("team"), ~ as.numeric(.)))
+```
+
+```{r}
+ggplot(team_season_stats_2,
+       aes(x = three_par_team,
+           y = threefg_pct_pg_team)) +
+    geom_point() +
+    facet_wrap(~year)
+```
+
