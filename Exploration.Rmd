@@ -11,40 +11,107 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-```
-
-
-```{r}
-team_box_scores <- readRDS("/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
-
-team_season_stats <- readRDS("/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
+set.seed(123)
 ```
 
 ```{r}
-team_box_scores_2 <- team_box_scores %>%
-    mutate(across(
-        -all_of(c("gamedate", "homeaway", "team", "opponent")),
-        ~ as.numeric(.))) %>%
-    mutate(season = case_when(
-        gamedate >= as.Date("2020-12-22") & 
-            gamedate <= as.Date("2021-07-20") ~ 2021,
-        gamedate >= as.Date("2021-10-19") & 
-            gamedate <= as.Date("2022-06-16") ~ 2022,
-        gamedate >= as.Date("2022-10-18") & 
-            gamedate <= as.Date("2023-06-12") ~ 2023,
-        gamedate >= as.Date("2023-10-24") & 
-            gamedate <= as.Date("2024-06-17") ~ 2024))
+team_box_scores <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
 
-team_season_stats_2 <- team_season_stats %>%
-    mutate(across(
-        -all_of("team"), ~ as.numeric(.)))
+team_season_stats <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
+
+player_box_scores <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
+
+player_season_stats <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/player_season_stats.rds")
+```
+
+## Missing Player Relation to Outcome
+
+### Finding the Most Important Player on Each Team
+
+```{r}
+find_best_player <- player_season_stats %>%
+    select(year, team, name, pts, player_effrtg, vorp, box_plusminus, usage_rate, 
+           on_off_net_per100poss, minutes)
 ```
 
 ```{r}
-ggplot(team_season_stats_2,
-       aes(x = three_par_team,
-           y = threefg_pct_pg_team)) +
-    geom_point() +
-    facet_wrap(~year)
+find_best_player_2a <- find_best_player %>%
+    filter(minutes > 24 & usage_rate > 10) %>%
+    group_by(year, team) %>%
+    slice_max(order_by = player_effrtg, n = 1, with_ties = FALSE) %>%
+    ungroup() %>%
+    select(year, team, name, player_effrtg) %>%
+    mutate(per_player_id = sample(1e1:1e3, n(), replace = FALSE))
 ```
 
+```{r}
+find_best_player_2b <- find_best_player %>%
+    filter(minutes > 24 & usage_rate > 10) %>%
+    group_by(year, team) %>%
+    slice_max(order_by = vorp, n = 1, with_ties = FALSE) %>%
+    ungroup() %>%
+    select(year, team, name, vorp) %>%
+    mutate(vorp_player_id = sample(1e1:1e3, n(), replace = FALSE))
+```
+
+```{r}
+find_best_player_2c <- find_best_player %>%
+    filter(minutes > 24 & usage_rate > 10) %>%
+    group_by(year, team) %>%
+    slice_max(order_by = usage_rate, n = 1, with_ties = FALSE) %>%
+    ungroup() %>%
+    select(year, team, name, usage_rate) %>%
+    mutate(usage_player_id = sample(1e1:1e3, n(), replace = FALSE))
+```
+
+Method of Best Player
+
+1.  PER
+2.  VORP
+3.  Usage
+4.  PER & VORP
+5.  PER & Usage
+6.  Usage & VORP
+7.  PER & VORP & Usage
+
+```{r}
+find_best_player_2_list <- list(find_best_player_2a, 
+                                find_best_player_2b, 
+                                find_best_player_2c)
+
+find_best_player_2 <- reduce(find_best_player_2_list, 
+                             full_join, 
+                             by = c("team", "year", "name"))
+
+find_best_player_2 <- find_best_player_2 %>%
+    select(-c(player_effrtg, vorp, usage_rate)) %>%
+    mutate(
+        year = as.numeric(year),
+        best_by_metric = case_when(
+            !is.na(per_player_id) & !is.na(vorp_player_id) & !is.na(usage_player_id) ~ 1,
+            !is.na(usage_player_id) & !is.na(vorp_player_id) ~ 2,
+            !is.na(per_player_id) & !is.na(usage_player_id) ~ 3,
+            !is.na(per_player_id) & !is.na(vorp_player_id) ~ 4,
+            !is.na(usage_player_id) ~ 5,
+            !is.na(vorp_player_id) ~ 6,
+            !is.na(per_player_id) ~ 7,
+            TRUE ~ 8
+        ))
+```
+
+```{r}
+player_box_scores_1a <- player_box_scores %>%
+    left_join(find_best_player_2, by = c("team", "name", "season"="year"))
+```
+
+## Winning Team Characteristics
+
+## Player Performance Variance During Season
+
+## More Effective Play-Styles
+
+## Most Common Combination

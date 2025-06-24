@@ -320,14 +320,14 @@ playoff_advanced_gen_player <- playoff_advanced_stats %>%
     rename_with( ~paste0("ps_", .x), .cols = -c("team", "year", "name"))
 
 pergame_player <- pergame_stats %>%
-    select(-c(obs_num, age, pos, games, starts, minutes, awards)) %>%
+    select(-c(obs_num, age, pos, games, starts, awards)) %>%
     separate(file_id, into = c("team", "year"), sep = "-") %>%
     select(year, team, everything()) %>%
     mutate(year = sub("\\..*", "", year)) %>%
     filter(name != "Team Totals")
 
 playoff_pergame_player <- playoff_pergame_stats %>%
-    select(-c(obs_num, age, pos, games, starts, minutes, awards)) %>%
+    select(-c(obs_num, age, pos, games, starts, awards)) %>%
     separate(file_id, into = c("team", "year"), sep = "-") %>%
     select(year, team, everything()) %>%
     mutate(year = sub("\\..*", "", year)) %>%
