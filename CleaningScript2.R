@@ -269,7 +269,44 @@ full_box_player <- basic_box_player %>%
             gamedate <= as.Date("2024-06-17") ~ 2024)) %>%
     mutate(across(
         -all_of(c("gamedate", "homeaway", "name", "min", "team", "opponent")),
-        ~ as.numeric(.)))
+        ~ as.numeric(.))) %>%
+    mutate(name = case_when(
+        name == "Alen SmailagiÄ" ~ "Alen Smailagic",
+        name == "Alperen ÅengÃ¼n" | name == "Alperen ÃÂengÃÂ¼n" ~ "Alperen Sengun",
+        name == "AnÅ¾ejs PaseÄÅiks" ~ "Anžejs Pasečņiks",
+        name == "Anderson VarejÃ£o" ~ "Anderson Varejao",
+        name == "Boban MarjanoviÄ"~ "Boban Marjanović",
+        name == "Bogdan BogdanoviÄ" ~ "Bogdan Bogdanović",
+        name == "Bojan BogdanoviÄ" | name == "Bojan BogdanoviÃÂ" ~ "Bojan Bogdanović",
+        name == "Cristiano FelÃ­cio" ~ "Cristiano Felicio",
+        name == "Dario Å ariÄ" ~ "Dario Šarić", #No Fix
+        name == "DÄvis BertÄns" ~ "Dāvis Bertāns",
+        name == "Dennis SchrÃ¶der" ~ "Dennis Schröder",
+        name == "Ersan Ä°lyasova" ~ "Ersan Ilyasova",
+        name == "Filip PetruÅ¡ev" ~ "Filip Petrusev",
+        name == "Goran DragiÄ" ~ "Goran Dragic",
+        name == "Jonas ValanÄiÅ«nas" | name == "Jonas ValanÃÂiÃÂ«nas" ~ "Jonas Valančiūnas",
+        name == "Juancho HernangÃ³mez" ~ "Juancho Hernangomez",
+        name == "Jusuf NurkiÄ" | name == "Jusuf NurkiÃÂ" ~ "Jusuf Nurkić",
+        name == "Karim ManÃ©" ~ "Karim Mane",
+        name == "Kristaps PorziÅÄ£is" | name == "Kristaps PorziÃÂÃÂ£is"~ "Kristaps Porziņģis",
+        name == "Lester QuiÃ±ones" ~ "Lester Quinones",
+        name == "Luka Å amaniÄ" ~ "Luka Samanic", #No Fix
+        name == "Luka DonÄiÄ" | name == "Luka DonÃÂiÃÂ" ~ "Luka Dončić",
+        name == "MÃ£ozinha Pereira" ~ "Maozinha Pereira",
+        name == "Moussa DiabatÃ©" ~ "Moussa Diabaté",
+        name == "NicolÃ² Melli" ~ "Nicolo Melli",
+        name == "Nikola JokiÄ" | name == "Nikola JokiÃÂ" ~ "Nikola Jokić",
+        name == "Nikola JoviÄ" ~ "Nikola Jović",
+        name == "Nikola VuÄeviÄ" | name == "Nikola VuÃÂeviÃÂ" ~ "Nikola Vučević",
+        name == "ThÃ©o Maledon" ~ "Theo Maledon",
+        name == "TimothÃ© Luwawu-Cabarrot" ~ "Timothe Luwawu-Cabarrot",
+        name == "TomÃ¡Å¡ SatoranskÃ½" ~ "Tomas Satoransky",
+        name == "Vasilije MiciÄ" ~ "Vasilije Micić",
+        name == "Vlatko ÄanÄar" ~ "Vlatko Čančar",
+        name == "Willy HernangÃ³mez" ~ "Willy Hernangomez",
+        TRUE ~ name
+    ))
 
 adj_shooting_player <- adj_shooting_stats %>%
     select(team_id, name, adj_2fg_pct, adj_3fg_pct, adj_efg_pct, adj_ft_pct, 

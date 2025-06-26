@@ -8,3 +8,4 @@
 * **DataChecking.R**: This script is used to check smaller chunks of code to check for errors.
 * **Organizing Code 2.Rmd**: This file is used to help organize code while I’m working with multiple data frames, visualizations, and other objects.
 * **Exploration.Rmd**: This file is used for data exploration.
+* **Functions**: This script is used as a placeholder for all the functions created.

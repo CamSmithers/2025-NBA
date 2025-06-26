@@ -15,6 +15,8 @@ set.seed(123)
 ```
 
 ```{r}
+source("/Users/camsmithers/Desktop/Camalytics/NBA/Functions.R")
+
 team_box_scores <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
 
@@ -35,60 +37,37 @@ player_season_stats <- readRDS(
 ```{r}
 find_best_player <- player_season_stats %>%
     select(year, team, name, pts, player_effrtg, vorp, box_plusminus, usage_rate, 
-           on_off_net_per100poss, minutes)
+           on_off_net_per100poss, minutes) %>%
+    rename("per" = "player_effrtg", "usage" = "usage_rate")
+
+find_best_player_2 <- fixplayername(find_best_player)
 ```
 
 ```{r}
-find_best_player_2a <- find_best_player %>%
-    filter(minutes > 24 & usage_rate > 10) %>%
-    group_by(year, team) %>%
-    slice_max(order_by = player_effrtg, n = 1, with_ties = FALSE) %>%
-    ungroup() %>%
-    select(year, team, name, player_effrtg) %>%
-    mutate(per_player_id = sample(1e1:1e3, n(), replace = FALSE))
+best_player_by_per <- best_player_metric(dataset = find_best_player_2, 
+                                    main_col = per, 
+                                    x = 24, y = 10)
+best_player_by_vorp <- best_player_metric(dataset = find_best_player_2, 
+                                          main_col = vorp,
+                                           x = 24, y = 10)
+best_player_by_usage <- best_player_metric(dataset = find_best_player_2, 
+                                           main_col = usage,
+                                           x = 24, y = 10)
 ```
 
 ```{r}
-find_best_player_2b <- find_best_player %>%
-    filter(minutes > 24 & usage_rate > 10) %>%
-    group_by(year, team) %>%
-    slice_max(order_by = vorp, n = 1, with_ties = FALSE) %>%
-    ungroup() %>%
-    select(year, team, name, vorp) %>%
-    mutate(vorp_player_id = sample(1e1:1e3, n(), replace = FALSE))
-```
+find_best_player_list <- list(best_player_by_per, 
+                                best_player_by_vorp, 
+                                best_player_by_usage)
 
-```{r}
-find_best_player_2c <- find_best_player %>%
-    filter(minutes > 24 & usage_rate > 10) %>%
-    group_by(year, team) %>%
-    slice_max(order_by = usage_rate, n = 1, with_ties = FALSE) %>%
-    ungroup() %>%
-    select(year, team, name, usage_rate) %>%
-    mutate(usage_player_id = sample(1e1:1e3, n(), replace = FALSE))
-```
-
-Method of Best Player
-
-1.  PER
-2.  VORP
-3.  Usage
-4.  PER & VORP
-5.  PER & Usage
-6.  Usage & VORP
-7.  PER & VORP & Usage
-
-```{r}
-find_best_player_2_list <- list(find_best_player_2a, 
-                                find_best_player_2b, 
-                                find_best_player_2c)
-
-find_best_player_2 <- reduce(find_best_player_2_list, 
+find_best_player_2 <- reduce(find_best_player_list, 
                              full_join, 
                              by = c("team", "year", "name"))
+```
 
-find_best_player_2 <- find_best_player_2 %>%
-    select(-c(player_effrtg, vorp, usage_rate)) %>%
+```{r}
+find_best_player_3 <- find_best_player_2 %>%
+    select(-c(per, vorp, usage)) %>%
     mutate(
         year = as.numeric(year),
         best_by_metric = case_when(
@@ -104,8 +83,37 @@ find_best_player_2 <- find_best_player_2 %>%
 ```
 
 ```{r}
-player_box_scores_1a <- player_box_scores %>%
-    left_join(find_best_player_2, by = c("team", "name", "season"="year"))
+bp_usage_active <- bp_on_court(team_box_scores,
+            player_box_scores, 
+            best_player_by_usage,
+            filter_by_col = min,
+            best_by_id = usage_player_id)
+```
+
+```{r}
+ggplot(bp_usage_active, 
+       aes(x = win,
+           fill = as.factor(best_by_player_avi))) +
+    geom_bar(position = "dodge", color = "black") + 
+    geom_text(stat = "count",
+              aes(label = after_stat(count)),
+              position = position_dodge(width = .9),
+              vjust = -.5) +
+    facet_wrap(~team) +
+    labs(
+        title = "Best Player Effect on Wins",
+        fill = "Best Player Played"
+    )
+```
+
+```{r}
+test_model_empty <- glm(win ~ 1,
+                        data = bp_usage_active, family = "binomial")
+test_model_metric <- glm(win ~ best_by_player_avi
+                         + team * season,
+                         data = bp_usage_active, family = "binomial")
+summary(test_model_empty)
+summary(test_model_metric)
 ```
 
 ## Winning Team Characteristics
