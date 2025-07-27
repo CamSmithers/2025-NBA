@@ -53,11 +53,8 @@ best_player_metric <- function(dataset, main_col, x, y) {
         mutate(year = as.numeric(year))
 }
 
-bp_on_court <- function(team_game_dataset,
-                        player_game_dataset,
-                        bp_dataset,
-                        filter_by_col,
-                        best_by_id) {
+bp_on_court <- function(team_game_dataset, player_game_dataset,
+                        bp_dataset, filter_by_col, best_by_id) {
     
     team_with_player <- team_game_dataset %>%
         select(team, gamedate, season, win) %>%
@@ -79,4 +76,15 @@ bp_on_court <- function(team_game_dataset,
                 only_best_players$bp_ids_keys, 1, 0))
     
     return(team_bp_dataset)
+}
+
+data_prep <- function(dirty_data, cols_to_keep,
+                      id_column, rename_str = "") {
+    clean_data <- dirty_data %>%
+        filter(name == "Team Totals") %>%
+        select({{cols_to_keep}}, {{id_column}}) %>%
+        separate({{id_column}}, into = c("team", "year"), sep = "-") %>%
+        mutate(year = sub("\\..*", "", year)) %>%
+        select(team, year, everything()) %>%
+        rename_with( ~paste0(rename_str, .x), .cols = -c(team, year))
 }

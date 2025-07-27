@@ -32,7 +32,7 @@ player_season_stats <- readRDS(
 
 ## Missing Player Relation to Outcome
 
-### Finding the Most Important Player on Each Team
+### 
 
 ```{r}
 find_best_player <- player_season_stats %>%
@@ -41,9 +41,7 @@ find_best_player <- player_season_stats %>%
     rename("per" = "player_effrtg", "usage" = "usage_rate")
 
 find_best_player_2 <- fixplayername(find_best_player)
-```
 
-```{r}
 best_player_by_per <- best_player_metric(dataset = find_best_player_2, 
                                     main_col = per, 
                                     x = 24, y = 10)
@@ -53,9 +51,7 @@ best_player_by_vorp <- best_player_metric(dataset = find_best_player_2,
 best_player_by_usage <- best_player_metric(dataset = find_best_player_2, 
                                            main_col = usage,
                                            x = 24, y = 10)
-```
 
-```{r}
 find_best_player_list <- list(best_player_by_per, 
                                 best_player_by_vorp, 
                                 best_player_by_usage)
@@ -63,34 +59,24 @@ find_best_player_list <- list(best_player_by_per,
 find_best_player_2 <- reduce(find_best_player_list, 
                              full_join, 
                              by = c("team", "year", "name"))
-```
 
-```{r}
-find_best_player_3 <- find_best_player_2 %>%
-    select(-c(per, vorp, usage)) %>%
-    mutate(
-        year = as.numeric(year),
-        best_by_metric = case_when(
-            !is.na(per_player_id) & !is.na(vorp_player_id) & !is.na(usage_player_id) ~ 1,
-            !is.na(usage_player_id) & !is.na(vorp_player_id) ~ 2,
-            !is.na(per_player_id) & !is.na(usage_player_id) ~ 3,
-            !is.na(per_player_id) & !is.na(vorp_player_id) ~ 4,
-            !is.na(usage_player_id) ~ 5,
-            !is.na(vorp_player_id) ~ 6,
-            !is.na(per_player_id) ~ 7,
-            TRUE ~ 8
-        ))
-```
-
-```{r}
 bp_usage_active <- bp_on_court(team_box_scores,
             player_box_scores, 
             best_player_by_usage,
             filter_by_col = min,
             best_by_id = usage_player_id)
-```
 
-```{r}
+bp_per_active <- bp_on_court(team_box_scores,
+                             player_box_scores,
+                             best_player_by_per,
+                             filter_by_col = min,
+                             best_by_id = per_player_id)
+bp_vorp_active <- bp_on_court(team_box_scores,
+                              player_box_scores,
+                              best_player_by_vorp,
+                              filter_by_col = min,
+                              best_by_id = vorp_player_id)
+
 ggplot(bp_usage_active, 
        aes(x = win,
            fill = as.factor(best_by_player_avi))) +
@@ -106,20 +92,31 @@ ggplot(bp_usage_active,
     )
 ```
 
-```{r}
-test_model_empty <- glm(win ~ 1,
-                        data = bp_usage_active, family = "binomial")
-test_model_metric <- glm(win ~ best_by_player_avi
-                         + team * season,
-                         data = bp_usage_active, family = "binomial")
-summary(test_model_empty)
-summary(test_model_metric)
+```{r eval=FALSE, include=FALSE}
+team_box_scores_final <- team_box_scores %>%
+    left_join(bp_usage_active, )
 ```
 
 ## Winning Team Characteristics
 
-## Player Performance Variance During Season
+```{r}
+winning_teams <- team_box_scores %>%
+    filter(win == 1) %>%
+    select(-c(gamedate, opponent, min, usage_rate, homeaway, overtime, team)) %>%
+    group_by(season) %>%
+    summarise(across(everything(), list(
+        mean = \(x) mean(x, na.rm = TRUE)
+        ))) %>%
+    mutate(dataset = "Winning Teams")
 
-## More Effective Play-Styles
+losing_teams <- team_box_scores %>%
+    filter(win == 0) %>%
+    select(-c(gamedate, opponent, min, usage_rate, homeaway, overtime, team)) %>%
+    group_by(season) %>%
+    summarise(across(everything(), list(
+        mean = \(x) mean(x, na.rm = TRUE)
+        ))) %>%
+    mutate(dataset = "Losing Teams")
 
-## Most Common Combination
+outcome_teams <- bind_rows(winning_teams, losing_teams)
+```
