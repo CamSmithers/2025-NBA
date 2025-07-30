@@ -78,13 +78,28 @@ bp_on_court <- function(team_game_dataset, player_game_dataset,
     return(team_bp_dataset)
 }
 
-data_prep <- function(dirty_data, cols_to_keep,
-                      id_column, rename_str = "") {
+data_prep_keep <- function(dirty_data, cols_to_keep,
+                      id_column, rename_str_pre = "",
+                      rename_str_post = "") {
     clean_data <- dirty_data %>%
         filter(name == "Team Totals") %>%
         select({{cols_to_keep}}, {{id_column}}) %>%
         separate({{id_column}}, into = c("team", "year"), sep = "-") %>%
         mutate(year = sub("\\..*", "", year)) %>%
         select(team, year, everything()) %>%
-        rename_with( ~paste0(rename_str, .x), .cols = -c(team, year))
+        rename_with( ~paste0(rename_str_pre, .x, rename_str_post),
+                     .cols = -c(team, year))
+}
+
+data_prep_drop <- function(dirty_data, cols_to_drop,
+                      id_column, rename_str_pre = "",
+                      rename_str_post = "") {
+    clean_data <- dirty_data %>%
+        filter(name == "Team Totals") %>%
+        select(-{{cols_to_drop}}) %>%
+        separate({{id_column}}, into = c("team", "year"), sep = "-") %>%
+        mutate(year = sub("\\..*", "", year)) %>%
+        select(team, year, everything()) %>%
+        rename_with( ~paste0(rename_str_pre, .x, rename_str_post),
+                     .cols = -c(team, year))
 }

@@ -1,5 +1,5 @@
 library(tidyverse)
-source("/Users/camsmithers/Desktop/Camalytics/NBA/DataPrep.R")
+source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/DataPrep.R")
 #Season Statistics
 general_team <- general_stats %>%
     select(-obs_num, -games) %>%
