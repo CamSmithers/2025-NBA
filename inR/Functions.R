@@ -3,12 +3,14 @@ fixplayername <- function(dataset) {
     dataset %>%
         mutate(name = case_when(
             name == "Alen SmailagiÄ" ~ "Alen Smailagic",
-            name == "Alperen ÅengÃ¼n" | name == "Alperen ÃÂengÃÂ¼n" ~ "Alperen Sengun",
+            name == "Alperen ÅengÃ¼n" | 
+                name == "Alperen ÃÂengÃÂ¼n" ~ "Alperen Sengun",
             name == "AnÅ¾ejs PaseÄÅiks" ~ "Anžejs Pasečņiks",
             name == "Anderson VarejÃ£o" ~ "Anderson Varejao",
             name == "Boban MarjanoviÄ"~ "Boban Marjanović",
             name == "Bogdan BogdanoviÄ" ~ "Bogdan Bogdanović",
-            name == "Bojan BogdanoviÄ" | name == "Bojan BogdanoviÃÂ" ~ "Bojan Bogdanović",
+            name == "Bojan BogdanoviÄ" | 
+                name == "Bojan BogdanoviÃÂ" ~ "Bojan Bogdanović",
             name == "Cristiano FelÃ­cio" ~ "Cristiano Felicio",
             name == "Dario Å ariÄ" ~ "Dario Šarić", #No Fix
             name == "DÄvis BertÄns" ~ "Dāvis Bertāns",
@@ -16,20 +18,26 @@ fixplayername <- function(dataset) {
             name == "Ersan Ä°lyasova" ~ "Ersan Ilyasova",
             name == "Filip PetruÅ¡ev" ~ "Filip Petrusev",
             name == "Goran DragiÄ" ~ "Goran Dragic",
-            name == "Jonas ValanÄiÅ«nas" | name == "Jonas ValanÃÂiÃÂ«nas" ~ "Jonas Valančiūnas",
+            name == "Jonas ValanÄiÅ«nas" | 
+                name == "Jonas ValanÃÂiÃÂ«nas" ~ "Jonas Valančiūnas",
             name == "Juancho HernangÃ³mez" ~ "Juancho Hernangomez",
-            name == "Jusuf NurkiÄ" | name == "Jusuf NurkiÃÂ" ~ "Jusuf Nurkić",
+            name == "Jusuf NurkiÄ" | 
+                name == "Jusuf NurkiÃÂ" ~ "Jusuf Nurkić",
             name == "Karim ManÃ©" ~ "Karim Mane",
-            name == "Kristaps PorziÅÄ£is" | name == "Kristaps PorziÃÂÃÂ£is"~ "Kristaps Porziņģis",
+            name == "Kristaps PorziÅÄ£is" | 
+                name == "Kristaps PorziÃÂÃÂ£is"~ "Kristaps Porziņģis",
             name == "Lester QuiÃ±ones" ~ "Lester Quinones",
             name == "Luka Å amaniÄ" ~ "Luka Samanic", #No Fix
-            name == "Luka DonÄiÄ" | name == "Luka DonÃÂiÃÂ" ~ "Luka Dončić",
+            name == "Luka DonÄiÄ" | 
+                name == "Luka DonÃÂiÃÂ" ~ "Luka Dončić",
             name == "MÃ£ozinha Pereira" ~ "Maozinha Pereira",
             name == "Moussa DiabatÃ©" ~ "Moussa Diabaté",
             name == "NicolÃ² Melli" ~ "Nicolo Melli",
-            name == "Nikola JokiÄ" | name == "Nikola JokiÃÂ" ~ "Nikola Jokić",
+            name == "Nikola JokiÄ" | 
+                name == "Nikola JokiÃÂ" ~ "Nikola Jokić",
             name == "Nikola JoviÄ" ~ "Nikola Jović",
-            name == "Nikola VuÄeviÄ" | name == "Nikola VuÃÂeviÃÂ" ~ "Nikola Vučević",
+            name == "Nikola VuÄeviÄ" | 
+                name == "Nikola VuÃÂeviÃÂ" ~ "Nikola Vučević",
             name == "ThÃ©o Maledon" ~ "Theo Maledon",
             name == "TimothÃ© Luwawu-Cabarrot" ~ "Timothe Luwawu-Cabarrot",
             name == "TomÃ¡Å¡ SatoranskÃ½" ~ "Tomas Satoransky",
@@ -78,7 +86,7 @@ bp_on_court <- function(team_game_dataset, player_game_dataset,
     return(team_bp_dataset)
 }
 
-data_prep_keep <- function(dirty_data, cols_to_keep,
+team_data_prep_keep <- function(dirty_data, cols_to_keep,
                       id_column, rename_str_pre = "",
                       rename_str_post = "") {
     clean_data <- dirty_data %>%
@@ -91,7 +99,7 @@ data_prep_keep <- function(dirty_data, cols_to_keep,
                      .cols = -c(team, year))
 }
 
-data_prep_drop <- function(dirty_data, cols_to_drop,
+team_data_prep_drop <- function(dirty_data, cols_to_drop,
                       id_column, rename_str_pre = "",
                       rename_str_post = "") {
     clean_data <- dirty_data %>%
@@ -102,4 +110,30 @@ data_prep_drop <- function(dirty_data, cols_to_drop,
         select(team, year, everything()) %>%
         rename_with( ~paste0(rename_str_pre, .x, rename_str_post),
                      .cols = -c(team, year))
+}
+
+player_data_prep_keep <- function(dirty_data, cols_to_keep,
+                                  id_column, rename_str_pre = "",
+                                  rename_str_post = "") {
+    clean_data <- dirty_data %>%
+        select({{cols_to_keep}}, {{id_column}}) %>%
+        separate({{id_column}}, into = c("team", "year"), sep = "-") %>%
+        select(year, team, everything()) %>%
+        mutate(year = sub("\\..*", "", year)) %>%
+        filter(name != "Team Totals") %>%
+        rename_with(~paste0(rename_str_pre, .x, rename_str_post),
+                    .cols = -c(team, year))
+}
+
+player_data_prep_drop <- function(dirty_data, cols_to_drop,
+                                  id_column, rename_str_pre = "",
+                                  rename_str_post = "") {
+    clean_data <- dirty_data %>%
+        select(-{{cols_to_drop}}) %>%
+        separate({{id_column}}, into = c("team", "year"), sep = "-") %>%
+        select(year, team, everything()) %>%
+        mutate(year = sub("\\..*", "", year)) %>%
+        filter(name != "Team Totals") %>%
+        rename_with(~paste0(rename_str_pre, .x, rename_str_post),
+                    .cols = -c(team, year, name))
 }
