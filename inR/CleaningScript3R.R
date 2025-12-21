@@ -97,83 +97,55 @@ misc_stats_2 <- misc_stats %>%
 
 
 
-playoff_pg_team <- team_data_prep_drop(dirty_data = playoff_pergame_stats,
-                                  cols_to_drop = 
-                                      c(obs_num, age, pos, games, 
-                                        starts, name, awards, minutes),
-                                  id_column = file_id,
-                                  rename_str_pre = "ps_",
-                                  rename_str_post = "")
+playoff_pg_team <- team_data_prep_drop(
+    dirty_data = playoff_pergame_stats, 
+    cols_to_drop = c(obs_num, age, pos, games, starts, name, awards, minutes), 
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
 
-advanced_team <- team_data_prep_keep(dirty_data = advanced_stats,
-                                cols_to_keep = c(ts_pct, off_ws, ws, 
-                                                 ws_per48, off_box_plusminus, 
-                                                 def_box_plusminus, 
-                                                 box_plusminus, 
-                                                 vorp),
-                                id_column = file_id,
-                                rename_str_pre = "",
-                                rename_str_post = "")
+advanced_team <- team_data_prep_keep(
+    dirty_data = advanced_stats, 
+    cols_to_keep = c(ts_pct, off_ws, ws, ws_per48, off_box_plusminus, 
+                     def_box_plusminus, box_plusminus, vorp), 
+    id_column = file_id, rename_str_pre = "", rename_str_post = "")
 
-playoff_advanced_team <- team_data_prep_keep(dirty_data = playoff_advanced_stats,
-                                        cols_to_keep = c(ts_pct, off_ws, ws, 
-                                                         ws_per48, 
-                                                         off_box_plusminus, 
-                                                         def_box_plusminus, 
-                                                         box_plusminus, 
-                                                         vorp),
-                                        id_column = file_id,
-                                        rename_str_pre = "ps_",
-                                        rename_str_post = "")
+playoff_advanced_team <- team_data_prep_keep(
+    dirty_data = playoff_advanced_stats, 
+    cols_to_keep = c(ts_pct, off_ws, ws, ws_per48, off_box_plusminus, 
+                     def_box_plusminus, box_plusminus, vorp), 
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
 
-adj_shooting_team <- team_data_prep_keep(dirty_data = adj_shooting_stats,
-                                    cols_to_keep = 
-                                        c(adj_fg_pct, adj_2fg_pct, 
-                                          adj_3fg_pct, adj_efg_pct, 
-                                          adj_ft_pct, adj_ts_pct, 
-                                          adj_ftar, adj_3par, team_id),
-                                    id_column = team_id,
-                                    rename_str_pre = "",
-                                    rename_str_post = "")
+adj_shooting_team <- team_data_prep_keep(
+    dirty_data = adj_shooting_stats, 
+    cols_to_keep = c(adj_fg_pct, adj_2fg_pct, adj_3fg_pct, adj_efg_pct, 
+                     adj_ft_pct, adj_ts_pct, adj_ftar, adj_3par, team_id), 
+    id_column = team_id, rename_str_pre = "", rename_str_post = "")
 
-playoff_adj_shooting_team <- team_data_prep_keep(dirty_data = 
-                                                playoff_adj_shooting_stats,
-                                            cols_to_keep = 
-                                                c(adj_fg_pct, adj_2fg_pct, 
-                                                  adj_3fg_pct, adj_efg_pct, 
-                                                  adj_ft_pct, adj_ts_pct, 
-                                                  adj_ftar, adj_3par, team_id),
-                                            id_column = file_id,
-                                            rename_str_pre = "ps_",
-                                            rename_str_post = "")
+playoff_adj_shooting_team <- team_data_prep_keep(
+    dirty_data = playoff_adj_shooting_stats, 
+    cols_to_keep = c(adj_fg_pct, adj_2fg_pct, adj_3fg_pct, adj_efg_pct, 
+                     adj_ft_pct, adj_ts_pct, adj_ftar, adj_3par, file_id), 
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
 
-shooting_team <- team_data_prep_drop(dirty_data = shooting_stats,
-                                cols_to_drop = 
-                                    c(obs_num, name, pos, age, games, 
-                                      minutes, awards, starts, fg_pct, 
-                                      fg_pct_2pt,fg_pct_3pt, heaves_fga, 
-                                      heaves_fg, awards),
-                                id_column = file_id,
-                                rename_str_pre = "",
-                                rename_str_post = "")
+shooting_team <- team_data_prep_drop(
+    dirty_data = shooting_stats, 
+    cols_to_drop = c(obs_num, name, pos, age, games, minutes, awards, starts, 
+                     fg_pct, fg_pct_2pt,fg_pct_3pt, heaves_fga, heaves_fg, 
+                     awards), 
+    id_column = file_id, rename_str_pre = "", rename_str_post = "")
 
-playoff_shooting_team <- team_data_prep_drop(dirty_data = playoff_shooting_stats,
-                                        cols_to_drop = 
-                                            c(obs_num, name, pos, age, 
-                                              games, minutes, awards, 
-                                              starts, fg_pct, fg_pct_2pt, 
-                                              fg_pct_3pt, heaves_fga, 
-                                              heaves_fg, awards),
-                                        id_column = file_id,
-                                        rename_str_pre = "ps_",
-                                        rename_str_post = "")
+playoff_shooting_team <- team_data_prep_drop(
+    dirty_data = playoff_shooting_stats, 
+    cols_to_drop = c(obs_num, name, pos, age, games, minutes, awards, starts, 
+                     fg_pct, fg_pct_2pt, fg_pct_3pt, heaves_fga, heaves_fg, 
+                     awards), 
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
 
-team_season_stats_list <- list(general_pergame_fnl, playoff_pergame_team, 
-                               general_lg_rank_fnl, general_yr2yr_fnl, 
-                               misc_stats_2, advanced_team, 
-                               playoff_advanced_team,
-                               adj_shooting_team, playoff_adj_shooting_team, 
-                               shooting_team, playoff_shooting_team)
+team_season_stats_list <- list(
+    general_pergame_fnl, playoff_pg_team, general_lg_rank_fnl, 
+    general_yr2yr_fnl, misc_stats_2, advanced_team, playoff_advanced_team, 
+    adj_shooting_team, playoff_adj_shooting_team, shooting_team, 
+    playoff_shooting_team)
+
 team_season_stats <- reduce(team_season_stats_list, left_join,
                             by = c("team", "year"))
 
@@ -290,6 +262,31 @@ full_box_player <- basic_box_player %>%
         -all_of(c("gamedate", "homeaway", "name", "min", "team", "opponent")),
         ~ as.numeric(.))) %>%
     fixplayername()
+#Ignore NAs introduced by coercion, those players didn't play
+#So the mins should be NA
 
 #----------------------------------------------------------------------------#
 #Player Season Statistics
+adj_shooting_player <- player_data_prep_keep(
+    dirty_data = adj_shooting_stats, 
+    cols_to_keep = c(team_id, names, adj_2fg_pct, adj_3fg_pct, adj_efg_pct, 
+                     adj_ft_pct, adj_ts_pct, adj_ftar, adj_3par), 
+    id_column = team_id, rename_str_pre = "", rename_str_post = "")
+
+playoff_adj_shooting_player <- player_data_prep_keep(
+    dirty_data = playoff_adj_shooting_stats, 
+    cols_to_keep = c(file_id, name, adj_2fg_pct, adj_3fg_pct, adj_efg_pct, 
+                     adj_ft_pct, adj_ts_pct, adj_ftar, adj_3par), 
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
+
+shooting_player <- player_data_prep_drop(
+    dirty_data = shooting_stats,
+    cols_to_drop = c(obs_num, pos, age, games, minutes, awards, starts, fg_pct, 
+                     fg_pct_2pt, fg_pct_3pt, heaves_fga, heaves_fg), 
+    id_column = file_id, rename_str_pre = "", rename_str_post = "")
+
+playoff_shooting_player <- player_data_prep_drop(
+    dirty_data = playoff_shooting_stats, 
+    cols_to_drop = c(obs_num, pos, age, games, minutes, awards, starts, fg_pct, 
+                     fg_pct_2pt, fg_pct_3pt, heaves_fga, heaves_fg), 
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
