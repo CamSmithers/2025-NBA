@@ -1,0 +1,60 @@
+---
+title: "Exploration 2"
+author: "Cam Smithers"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+set.seed(123)
+```
+
+```{r}
+source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
+
+team_box_scores <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
+
+team_season_stats <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
+
+player_box_scores <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
+
+player_regseason_stats <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
+```
+
+Linear Models
+
+```{r}
+team_box_scores <- team_box_scores %>%
+    mutate(netrating = offrating - defrating)
+```
+
+```{r}
+empty_model_net <- lm(netrating ~ 1, data = team_box_scores)
+summary(empty_model_net)
+```
+
+```{r}
+net_model_one <- lm(netrating ~ ftar + tov + threefg_pct, data = team_box_scores)
+summary(net_model_one)
+```
+
+Binary Models
+
+```{r}
+
+```
+
+Multinomial Models
+
+```{r}
+
+```

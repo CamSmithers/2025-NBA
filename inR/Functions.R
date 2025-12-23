@@ -122,7 +122,7 @@ player_data_prep_keep <- function(dirty_data, cols_to_keep,
         mutate(year = sub("\\..*", "", year)) %>%
         filter(name != "Team Totals") %>%
         rename_with(~paste0(rename_str_pre, .x, rename_str_post),
-                    .cols = -c(team, year))
+                    .cols = -c(team, year, name))
 }
 
 player_data_prep_drop <- function(dirty_data, cols_to_drop,

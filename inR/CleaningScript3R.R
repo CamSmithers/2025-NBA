@@ -1,5 +1,6 @@
 library(tidyverse)
 source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/DataPrep.R")
+source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
 #----------------------------------------------------------------------------#
 #Team Season Statistics
 general_team <- general_stats %>%
@@ -201,12 +202,14 @@ team_box_scores <- basic_box_team %>%
         gamedate >= as.Date("2023-10-24") & 
             gamedate <= as.Date("2024-06-17") ~ 2024))
 
-#saveRDS(team_season_stats,
-#        file = 
-#"/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
-#saveRDS(team_box_scores, 
-#        file = 
-#"/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
+#saveRDS(
+#    team_season_stats,
+#    file = 
+#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
+#saveRDS(
+#    team_box_scores, 
+#    file = 
+#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
 
 #---------------------------------------------------------------------------#
 #Player Basic Box Scores
@@ -265,11 +268,16 @@ full_box_player <- basic_box_player %>%
 #Ignore NAs introduced by coercion, those players didn't play
 #So the mins should be NA
 
+#saveRDS(
+#    full_box_player,
+#    file = 
+#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
+
 #----------------------------------------------------------------------------#
 #Player Season Statistics
 adj_shooting_player <- player_data_prep_keep(
     dirty_data = adj_shooting_stats, 
-    cols_to_keep = c(team_id, names, adj_2fg_pct, adj_3fg_pct, adj_efg_pct, 
+    cols_to_keep = c(team_id, name, adj_2fg_pct, adj_3fg_pct, adj_efg_pct, 
                      adj_ft_pct, adj_ts_pct, adj_ftar, adj_3par), 
     id_column = team_id, rename_str_pre = "", rename_str_post = "")
 
@@ -290,3 +298,58 @@ playoff_shooting_player <- player_data_prep_drop(
     cols_to_drop = c(obs_num, pos, age, games, minutes, awards, starts, fg_pct, 
                      fg_pct_2pt, fg_pct_3pt, heaves_fga, heaves_fg), 
     id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
+
+advanced_gen_player <- player_data_prep_drop(
+    dirty_data = advanced_stats,
+    cols_to_drop = c(obs_num, age, pos, games, starts, minutes, awards),
+    id_column = file_id, rename_str_pre = "", rename_str_post = "")
+
+playoff_advanced_gen_player <- player_data_prep_drop(
+    dirty_data = playoff_advanced_stats,
+    cols_to_drop = c(obs_num, age, pos, games, starts, minutes, awards),
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
+
+pergame_player <- player_data_prep_drop(
+    dirty_data = pergame_stats,
+    cols_to_drop = c(obs_num, age, pos, games, starts, awards),
+    id_column = file_id, rename_str_pre = "", rename_str_post = "")
+
+playoff_pergame_player <- player_data_prep_drop(
+    dirty_data = playoff_pergame_stats,
+    cols_to_drop = c(obs_num, age, pos, games, starts, awards),
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
+
+playbyplay_player <- player_data_prep_drop(
+    dirty_data = playbyplay_stats,
+    cols_to_drop = c(obs_num, age, pos, games, starts, minutes, awards, and1),
+    id_column = file_id, rename_str_pre = "", rename_str_post = "")
+
+playoff_playbyplay_player <- player_data_prep_drop(
+    dirty_data = playoff_playbyplay_stats,
+    cols_to_drop = c(obs_num, age, pos, games, starts, minutes, awards, and1),
+    id_column = file_id, rename_str_pre = "ps_", rename_str_post = "")
+
+player_regseason_stats_list <- list(
+    adj_shooting_player, shooting_player, advanced_gen_player, pergame_player, 
+    playbyplay_player)
+
+player_postseason_stats_list <- list(
+    playoff_adj_shooting_player, playoff_shooting_player, 
+    playoff_advanced_gen_player, playoff_pergame_player, 
+    playoff_playbyplay_player)
+
+player_regseason_stats <- reduce(player_regseason_stats_list, left_join,
+                              by = c("team", "year", "name"))
+
+player_postseason_stats <- reduce(player_postseason_stats_list, left_join,
+                                 by = c("team", "year", "name"))
+
+#saveRDS(
+#    player_regseason_stats,
+#    file = 
+#    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
+
+#saveRDS(
+#    player_postseason_stats,
+#    file = 
+#        "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_pstsn_stats.rds")
