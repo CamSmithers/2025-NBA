@@ -181,10 +181,7 @@ advanced_box_team <- advanced_box_stats %>%
     mutate(homeaway = if_else(str_detect(game_id, team), "home", "away")) %>%
     select(-obs_num, -name, -box_plusminus, -team_id,
            -opp_id, -date_str, -game_id) %>%
-    select(gamedate, team, opponent, everything()) %>%
-    mutate(
-        overtime = if_else(min > 240, 1, 0),
-        win = if_else(offrating > defrating, 1, 0))
+    select(gamedate, team, opponent, everything())
 
 team_box_scores <- basic_box_team %>%
     left_join(advanced_box_team, 

@@ -9,10 +9,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Necessary Packages
+
 ```{r}
 library(tidyverse)
 set.seed(123)
 ```
+
+Necessary Data Sets
 
 ```{r}
 source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
@@ -30,31 +34,52 @@ player_regseason_stats <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
 ```
 
-Linear Models
+Summary
+
+I have been running into issues when creating models to predict the outcomes of games. The issue is my model creates predictions where I know what has already happened, I don't know what will happen in a game that has yet to be played. Therefore, I have two methods by which I can approach this problem.
+
+1.  Determine how the team plays on average, then how they play within one and two standard deviations of the mean.
+    1.  Mean: Average or Baseline for Team
+    2.  1 SD: Above/Below Average Performance for Team
+    3.  2 SD: Significantly Above/Below Average Performance for Team
+2.  Use the data from the previous five seasons and the current season to create the models. However, when the models are created the data from the current season have more weight. Having them weigh more will enable a focus on this seasons, while providing historical context. Once the model has been created use the data from the current season to generate fitted values.
+
+------------------------------------------------------------------------
+
+Method 1: Using Standard Deviations to Predict Outcome
+
+1.  For each team I want to find the mean, one sd away from the mean, and two sd away from the mean.
+    -   Using Offensive Rating & Defensive Rating
 
 ```{r}
-team_box_scores <- team_box_scores %>%
-    mutate(netrating = offrating - defrating)
+method_1 <- team_box_scores %>%
+    select(gamedate, team, offrating, defrating, season) %>%
+    mutate(win = if_else(offrating > defrating, 1, 0)) %>%
+    group_by(season, team) %>%
+    mutate(season_avg_offrtg = round(mean(offrating), 1))
 ```
 
 ```{r}
-empty_model_net <- lm(netrating ~ 1, data = team_box_scores)
-summary(empty_model_net)
+method_1pt2 <- method_1 %>%
+    mutate(offperformance = case_when(
+        offrating < season_avg_offrtg - 2 * sd(offrating) ~ "Negative Outlier",
+        offrating > season_avg_offrtg + 2 * sd(offrating) ~ "Positive Outlier",
+        offrating >= season_avg_offrtg - 2 * sd(offrating) &
+            offrating < season_avg_offrtg - sd(offrating) ~ "Within -2SD",
+        offrating > season_avg_offrtg + sd(offrating) & 
+            offrating <= season_avg_offrtg + 2 * sd(offrating) ~ "Within +2SD",
+        offrating >= season_avg_offrtg - sd(offrating) &
+            offrating < season_avg_offrtg ~ "Within -1SD",
+        offrating >= season_avg_offrtg &
+            offrating < offrating + sd(offrating) ~ "Within +1SD"
+    ))
 ```
 
 ```{r}
-net_model_one <- lm(netrating ~ ftar + tov + threefg_pct, data = team_box_scores)
-summary(net_model_one)
+ggplot(method_1pt2 %>%
+           filter(season == 2024), aes(offperformance)) +
+    geom_bar(aes(fill = offperformance)) +
+    facet_wrap(~team)
 ```
 
-Binary Models
-
-```{r}
-
-```
-
-Multinomial Models
-
-```{r}
-
-```
+Next Group By Team & Season -\> Count Offensive Performance Type
