@@ -76,10 +76,57 @@ method_1pt2 <- method_1 %>%
 ```
 
 ```{r}
-ggplot(method_1pt2 %>%
-           filter(season == 2024), aes(offperformance)) +
-    geom_bar(aes(fill = offperformance)) +
-    facet_wrap(~team)
+summary_count <- method_1pt2 %>%
+    group_by(season, team, offperformance) %>%
+    summarize(offperformance_count = n())
 ```
+
+```{r}
+summary_count_2 <- summary_count %>%
+    group_by(season, team) %>%
+    arrange(desc(offperformance_count))
+```
+
+```{r}
+test_summary <- method_1pt2 %>%
+    group_by(offperformance) %>%
+    filter(team == "PHI", season == 2022) %>%
+    summarise(offperformance_count = n()) %>%
+    arrange(desc(offperformance_count)) %>%
+    slice_head(n = 1) %>%
+    mutate(team = "PHI", season = 2022)
+```
+
+```{r}
+
+```
+
+```{r}
+nba_df <- data.frame(matrix(ncol = 4, nrow = 0))
+names(blank_df) <- c("offperformance_type", "performance_count", "team", "season")
+
+nba_teams <- unique(method_1pt2$team)
+nba_years <- unique(method_1pt2$season)
+nba_list <- vector(mode = "list", length = 0)
+
+for (nba_year in nba_years) {
+    for (nba_team in nba_teams) {
+        offense_performance_sort <- method_1pt2 %>%
+            group_by(offperformance) %>%
+            filter(team == nba_team, season == nba_year) %>%
+            summarize(offperformance_count = n()) %>%
+            arrange(desc(offperformance_count)) %>%
+            slice_head(n = 1) %>%
+            mutate(team = nba_team, season = nba_year)
+        
+        nba_df <- rbind(nba_df, offense_performance_sort)
+    }
+}
+```
+
+```{r}
+nba_testing_frame <- data.frame(nba_list)
+```
+
 
 Next Group By Team & Season -\> Count Offensive Performance Type
