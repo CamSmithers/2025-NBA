@@ -137,3 +137,23 @@ player_data_prep_drop <- function(dirty_data, cols_to_drop,
         rename_with(~paste0(rename_str_pre, .x, rename_str_post),
                     .cols = -c(team, year, name))
 }
+
+std_dev_mag <- function(dirty_data, new_colname,
+                        og_value, avg_value, sd_value) {
+    dirty_data %>%
+        mutate(
+            new_colname = case_when(
+                #Outliers
+                {{og_value}} < {{avg_value}} - 2 * {{sd_value}} ~ "Neg Outlier",
+                {{og_value}} > {{avg_value}} + 2 * {{sd_value}} ~ "Pos Outlier",
+                #Within 2SD
+                {{og_value}} >= {{avg_value}} - 2 * {{sd_value}} &
+                    {{og_value}} < {{avg_value}} - {{sd_value}} ~ "Within -2SD",
+                {{og_value}} <= {{avg_value}} + 2 * {{sd_value}} &
+                    {{og_value}} > {{avg_value}} + {{sd_value}} ~ "Within +2SD",
+                #Within 1SD
+                {{og_value}} >= {{avg_value}} - {{sd_value}} &
+                    {{og_value}} < {{avg_value}} ~ "Within -1SD",
+                {{og_value}} < {avg_value} + {{sd_value}} &
+                    {{og_value}} > {{avg_value}} ~ "Within +1SD"))
+}

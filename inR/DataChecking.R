@@ -1,2 +1,5 @@
-testing_df <- advanced_box_team %>%
-    filter(team_id == opp_id)
+testing_data <- team_box_scores %>%
+    group_by(season) %>%
+    summarize(
+        std = sd(offrating)
+    )
