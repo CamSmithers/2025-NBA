@@ -21,17 +21,14 @@ Necessary Data Sets
 ```{r}
 source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
 
-team_box_scores <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
-
 team_season_stats <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
 
-player_box_scores <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
-
 player_regseason_stats <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
+
+usdpo <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/usdpo.rds")
 ```
 
 Summary
@@ -47,5 +44,58 @@ I have been running into issues when creating models to predict the outcomes of 
 ------------------------------------------------------------------------
 
 Model 1: Win or Loss
+
+```{r}
+win_empty <- glm(data = usdpo,
+                 win ~ 1,
+                 family = "binomial")
+summary(win_empty)
+```
+
+```{r}
+win_one <- glm(data=usdpo,
+               win ~ posspts,
+               family = "binomial")
+summary(win_one)
+```
+
+```{r}
+win_two <- glm(data=usdpo,
+               win ~ tmsn_netpf + poss,
+               family = "binomial")
+summary(win_two)
+```
+
+```{r}
+win_three <- glm(data=usdpo,
+                 win ~ pri_op + pri_dp + pri_pp,
+                 family = "binomial")
+summary(win_three)
+```
+
+```{r}
+win_four <- glm(data=usdpo,
+                win ~ team + opponent,
+                family = "binomial")
+summary(win_four)
+```
+
+```{r}
+win_five <- glm(data=usdpo,
+                win ~ posspts + tmsn_netpf + pri_op + pri_dp + pri_pp +
+                    team + opponent + season,
+                family = "binomial")
+summary(win_five)
+```
+
+```{r}
+model_five_fitted <- fitted(win_five)
+model_five_predict <- predict(win_five, newdata = usdpo, type = "response")
+usdpo <- cbind(usdpo, model_five_predict)
+usdpo <- usdpo %>%
+    mutate(model_five_predict = round(100 * model_five_predict, 1))
+```
+
+------------------------------------------------------------------------
 
 Model 2: Magnitude of Outcome

@@ -1,16 +1,13 @@
+library(tidyverse)
+
 source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
 
 team_box_scores <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
 
-team_season_stats <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
-
 player_box_scores <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
 
-player_regseason_stats <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
 
 usdpo <- team_box_scores %>%
     select(gamedate, team, season, offrating, defrating, pts) %>%
@@ -32,7 +29,7 @@ usdpo <- team_box_scores %>%
     mutate(ts_avg_netrating = mean(netrating)) %>%
     ungroup()
 
-usdpo_2 <- usdpo %>%
+usdpo <- usdpo %>%
     mutate(
         offperformance = case_when(
             #Outliers
@@ -82,12 +79,12 @@ usdpo_2 <- usdpo %>%
 #Offensive
 off_nba_df <- data.frame(matrix(ncol = 0, nrow = 0))
 
-nba_teams <- unique(usdpo_2$team)
-nba_years <- unique(usdpo_2$season)
+nba_teams <- unique(usdpo$team)
+nba_years <- unique(usdpo$season)
 
 for (nba_year in nba_years) {
     for (nba_team in nba_teams) {
-        offense_performance_sort <- usdpo_2 %>%
+        offense_performance_sort <- usdpo %>%
             group_by(offperformance) %>%
             filter(team == nba_team, season == nba_year) %>%
             summarize(offperformance_count = n()) %>%
@@ -116,7 +113,7 @@ def_nba_df <- data.frame(matrix(ncol = 0, nrow = 0))
 
 for (nba_year in nba_years) {
     for (nba_team in nba_teams) {
-        defense_performance_sort <- usdpo_2 %>%
+        defense_performance_sort <- usdpo %>%
             group_by(defperformance) %>%
             filter(team == nba_team, season == nba_year) %>%
             summarize(defperformance_count = n()) %>%
@@ -141,12 +138,12 @@ for (nba_year in nba_years) {
     }
 }
 
-#Posessions
+#Possessions
 poss_nba_df <- data.frame(matrix(ncol = 0, nrow = 0))
 
 for (nba_year in nba_years) {
     for (nba_team in nba_teams) {
-        possession_performance_sort <- usdpo_2 %>%
+        possession_performance_sort <- usdpo %>%
             group_by(possperformance) %>%
             filter(team == nba_team, season == nba_year) %>%
             summarize(possperformance_count = n()) %>%
@@ -176,14 +173,26 @@ measures_nba_df <- off_nba_df %>%
     left_join(poss_nba_df, by = c("team", "season")) %>%
     select(team, season, everything())
 
-usdpo_3 <- usdpo_2 %>%
+usdpo <- usdpo %>%
     left_join(measures_nba_df, by = c("team", "season")) %>%
     mutate(across(where(is.character), as.factor),
            ts_avg_netrating = round(ts_avg_netrating, 1)) %>%
     select(-starts_with("secondary"), -ends_with("_count"), 
            -starts_with("ls_"))
     
-names(usdpo_3) <- c("gamedate", "team", "season", "ortg", "drtg", "pts", 
+names(usdpo) <- c("gamedate", "team", "season", "ortg", "drtg", "pts", 
                     "win", "netrtg", "poss", "posspts", "tmsn_netpf", 
                     "offpf", "defpf", "posspf", "pri_op", "tert_op", 
                     "pri_dp", "tert_dp", "pri_pp", "tert_pp")
+
+team_opponent <- player_box_scores %>%
+    distinct(gamedate, team, opponent, season)
+
+usdpo <- usdpo %>%
+    left_join(team_opponent, by = c("team", "season", "gamedate")) %>%
+    mutate(opponent = as.factor(opponent))
+
+saveRDS(
+    usdpo,
+    file = 
+        "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/usdpo.rds")
