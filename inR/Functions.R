@@ -144,16 +144,16 @@ std_dev_mag <- function(dirty_data, new_colname,
         mutate(
             new_colname = case_when(
                 #Outliers
-                {{og_value}} < {{avg_value}} - 2 * {{sd_value}} ~ "Neg Outlier",
-                {{og_value}} > {{avg_value}} + 2 * {{sd_value}} ~ "Pos Outlier",
+                og_value < avg_value - 2 * sd_value ~ "Neg Outlier",
+                og_value > avg_value + 2 * sd_value ~ "Pos Outlier",
                 #Within 2SD
-                {{og_value}} >= {{avg_value}} - 2 * {{sd_value}} &
-                    {{og_value}} < {{avg_value}} - {{sd_value}} ~ "Within -2SD",
-                {{og_value}} <= {{avg_value}} + 2 * {{sd_value}} &
-                    {{og_value}} > {{avg_value}} + {{sd_value}} ~ "Within +2SD",
+                og_value >= avg_value - 2 * sd_value &
+                    og_value < avg_value - sd_value ~ "Within -2SD",
+                og_value <= avg_value + 2 * sd_value &
+                    og_value > avg_value + sd_value ~ "Within +2SD",
                 #Within 1SD
-                {{og_value}} >= {{avg_value}} - {{sd_value}} &
-                    {{og_value}} < {{avg_value}} ~ "Within -1SD",
-                {{og_value}} < {avg_value} + {{sd_value}} &
-                    {{og_value}} > {{avg_value}} ~ "Within +1SD"))
+                og_value >= avg_value - sd_value &
+                    og_value < avg_value ~ "Within -1SD",
+                og_value < avg_value + sd_value &
+                    og_value > avg_value ~ "Within +1SD"))
 }
