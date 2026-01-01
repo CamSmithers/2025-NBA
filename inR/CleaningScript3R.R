@@ -120,7 +120,9 @@ team_box_scores <- basic_box_team %>%
         gamedate >= as.Date("2022-10-18") & 
             gamedate <= as.Date("2023-06-12") ~ 2023,
         gamedate >= as.Date("2023-10-24") & 
-            gamedate <= as.Date("2024-06-17") ~ 2024))
+            gamedate <= as.Date("2024-06-17") ~ 2024,
+        gamedate >= as.Date("2024-10-15") & 
+            gamedate <= as.Date("2025-07-01") ~ 2025,))
 
 #saveRDS(
 #    team_season_stats,

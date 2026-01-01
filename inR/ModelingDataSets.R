@@ -3,14 +3,17 @@ library(tidyverse)
 source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
 
 team_box_scores <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds")
+team_box_scores_cy <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/TeamBoxOctNov-2526.rds")
 
 player_box_scores <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
 
+team_box_scores <- rbind(team_box_scores, team_box_scores_cy)
 
 usdpo <- team_box_scores %>%
-    select(gamedate, team, season, offrating, defrating, pts) %>%
+    select(gamedate, team, opponent, season, offrating, defrating, pts) %>%
     mutate(
         win = if_else(offrating > defrating, 1, 0),
         netrating = offrating - defrating,
@@ -180,17 +183,17 @@ usdpo <- usdpo %>%
     select(-starts_with("secondary"), -ends_with("_count"), 
            -starts_with("ls_"))
     
-names(usdpo) <- c("gamedate", "team", "season", "ortg", "drtg", "pts", 
+names(usdpo) <- c("gamedate", "team", "opponent", "season", "ortg", "drtg", "pts", 
                     "win", "netrtg", "poss", "posspts", "tmsn_netpf", 
                     "offpf", "defpf", "posspf", "pri_op", "tert_op", 
                     "pri_dp", "tert_dp", "pri_pp", "tert_pp")
 
-team_opponent <- player_box_scores %>%
-    distinct(gamedate, team, opponent, season)
+#team_opponent <- player_box_scores %>%
+#    distinct(gamedate, team, opponent, season)
 
-usdpo <- usdpo %>%
-    left_join(team_opponent, by = c("team", "season", "gamedate")) %>%
-    mutate(opponent = as.factor(opponent))
+#usdpo <- usdpo %>%
+#    left_join(team_opponent, by = c("team", "season", "gamedate")) %>%
+#    mutate(opponent = as.factor(opponent))
 
 saveRDS(
     usdpo,

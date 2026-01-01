@@ -70,5 +70,5 @@ monthly_team_box_scores <- monthly_basic_box_team %>%
 saveRDS(
     monthly_team_box_scores,
     file = 
-        '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/TeamBoxOctNov-2526.csv'
+        '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/TeamBoxOctNov-2526.rds'
 )
