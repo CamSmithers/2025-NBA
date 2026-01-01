@@ -62,30 +62,18 @@ win_test <- testing(win_split)
 ```
 
 ```{r}
-win_two <- train(
-    win ~ tmsn_netpf + poss,
-    data = usdpo,
-    method = "glm",
-    family = "binomial",
-    trControl = trainControl(method = "cv", number = 10))
-
 win_three <- train(
-    win ~ pri_op + pri_dp + pri_pp,
+    win ~ tmsn_netpf + pri_op + pri_dp + pri_pp + team + opponent + season + 
+        tmsn_netpf_opp + pri_op_opp + pri_dp_opp + pri_pp_opp + tmsn_avgposspts +
+        tmsn_avgposspts_opp,
     data = usdpo,
     method = "glm",
     family = "binomial",
     trControl = trainControl(method = "cv", number = 10))
 
 win_four <- train(
-    win ~ team + opponent,
-    data = usdpo,
-    method = "glm",
-    family = "binomial",
-    trControl = trainControl(method = "cv", number = 10))
-
-win_five <- train(
-    win ~ posspts + tmsn_netpf + pri_op + pri_dp + pri_pp +
-                    team + opponent + season,
+    win ~ tmsn_netpf + pri_op + pri_dp + pri_pp + team + opponent + season + 
+        tmsn_netpf_opp + pri_op_opp + pri_dp_opp + pri_pp_opp,
     data = usdpo,
     method = "glm",
     family = "binomial",
@@ -96,10 +84,8 @@ win_five <- train(
 summary(
     resamples(
         list(
-            model1 = win_two,
-            model2 = win_three,
-            model3 = win_four,
-            model4 = win_five
+            model1 = win_three,
+            model2 = win_four
         )
     )
 )$statistics$Accuracy

@@ -181,12 +181,33 @@ usdpo <- usdpo %>%
     mutate(across(where(is.character), as.factor),
            ts_avg_netrating = round(ts_avg_netrating, 1)) %>%
     select(-starts_with("secondary"), -ends_with("_count"), 
-           -starts_with("ls_"))
+           -starts_with("ls_")) %>%
+    group_by(season, team) %>%
+    mutate(tmsn_avgposs = trunc(mean(poss)),
+           tmsn_avgposspts = round(mean(ptsperposs), 2))
     
-names(usdpo) <- c("gamedate", "team", "opponent", "season", "ortg", "drtg", "pts", 
-                    "win", "netrtg", "poss", "posspts", "tmsn_netpf", 
-                    "offpf", "defpf", "posspf", "pri_op", "tert_op", 
-                    "pri_dp", "tert_dp", "pri_pp", "tert_pp")
+names(usdpo) <- c("gamedate", "team", "opponent", "season", 
+                  "ortg", "drtg", "pts", "win", "netrtg", 
+                  "poss", "posspts", "tmsn_netpf", "offpf", 
+                  "defpf", "posspf", "pri_op", "tert_op", 
+                  "pri_dp", "tert_dp", "pri_pp", "tert_pp", 
+                  "tmsn_avgposs", "tmsn_avgposspts")
+
+usdpo <- usdpo %>%
+    select(gamedate, season, team, opponent, ortg, drtg, netrtg,
+           pts, win, posspts, tmsn_avgposs, tmsn_avgposspts,
+           tmsn_netpf, everything())
+
+usdpo_with_opp <- usdpo %>%
+    select(gamedate, season, team, pts, tmsn_netpf,
+           tmsn_avgposs, tmsn_avgposspts,
+           pri_op, pri_dp,pri_pp, 
+           tert_op, tert_dp, tert_pp) %>%
+    rename_with(~paste0(.x, "_opp"), .cols = -c(gamedate, season))
+
+usdpo <- usdpo %>%
+    left_join(usdpo_with_opp, by = c("gamedate", "season", 
+                                     "opponent"="team_opp"))
 
 #team_opponent <- player_box_scores %>%
 #    distinct(gamedate, team, opponent, season)
@@ -195,7 +216,7 @@ names(usdpo) <- c("gamedate", "team", "opponent", "season", "ortg", "drtg", "pts
 #    left_join(team_opponent, by = c("team", "season", "gamedate")) %>%
 #    mutate(opponent = as.factor(opponent))
 
-saveRDS(
-    usdpo,
-    file = 
-        "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/usdpo.rds")
+#saveRDS(
+#    usdpo,
+#    file = 
+#        "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/usdpo.rds")
