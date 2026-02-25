@@ -78,6 +78,14 @@ win_four <- train(
     method = "glm",
     family = "binomial",
     trControl = trainControl(method = "cv", number = 10))
+win_five <- train(
+    win ~ tmsn_netpf + pri_op + pri_dp + pri_pp + team + opponent + season + 
+        tmsn_netpf_opp + pri_op_opp + pri_dp_opp + pri_pp_opp + tert_op + tert_dp + 
+        tert_op_opp + tert_dp_opp,
+    data = usdpo,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
 ```
 
 ```{r}
@@ -85,7 +93,8 @@ summary(
     resamples(
         list(
             model1 = win_three,
-            model2 = win_four
+            model2 = win_four,
+            model3 = win_five
         )
     )
 )$statistics$Accuracy

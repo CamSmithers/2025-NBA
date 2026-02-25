@@ -1,9 +1,9 @@
 library(tidyverse)
 monthly_adv_box <- read_csv(
-    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/AdvancedBoxOctNov-2526.csv'
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/AdvancedBoxDec-2526.csv'
 )
 monthly_basic_box <- read_csv(
-    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/BasicBoxOctNov-2526.csv'
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/BasicBoxDec-2526.csv'
 )
 
 monthly_adv_box_names <- c("obs_num", "name", "min", "ts_pct", "efg_pct", 
@@ -70,5 +70,5 @@ monthly_team_box_scores <- monthly_basic_box_team %>%
 saveRDS(
     monthly_team_box_scores,
     file = 
-        '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/TeamBoxOctNov-2526.rds'
+        '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/TeamBoxDec-2526.rds'
 )

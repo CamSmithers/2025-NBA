@@ -9,114 +9,53 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Packages & Data
+
 ```{r}
 library(tidyverse)
 set.seed(123)
 ```
 
 ```{r}
-source("/Users/camsmithers/Desktop/Camalytics/NBA/Functions.R")
+source("/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R")
 
 team_box_scores <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores.rds")
-
-team_season_stats <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_season_stats.rds")
-
-player_box_scores <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
-
-player_season_stats <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/player_season_stats.rds")
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds")
 ```
 
-## Missing Player Relation to Outcome
+## Overview
 
-### 
+### Summary Statistics
 
 ```{r}
-find_best_player <- player_season_stats %>%
-    select(year, team, name, pts, player_effrtg, vorp, box_plusminus, usage_rate, 
-           on_off_net_per100poss, minutes) %>%
-    rename("per" = "player_effrtg", "usage" = "usage_rate")
-
-find_best_player_2 <- fixplayername(find_best_player)
-
-best_player_by_per <- best_player_metric(dataset = find_best_player_2, 
-                                    main_col = per, 
-                                    x = 24, y = 10)
-best_player_by_vorp <- best_player_metric(dataset = find_best_player_2, 
-                                          main_col = vorp,
-                                           x = 24, y = 10)
-best_player_by_usage <- best_player_metric(dataset = find_best_player_2, 
-                                           main_col = usage,
-                                           x = 24, y = 10)
-
-find_best_player_list <- list(best_player_by_per, 
-                                best_player_by_vorp, 
-                                best_player_by_usage)
-
-find_best_player_2 <- reduce(find_best_player_list, 
-                             full_join, 
-                             by = c("team", "year", "name"))
-
-bp_usage_active <- bp_on_court(team_box_scores,
-            player_box_scores, 
-            best_player_by_usage,
-            filter_by_col = min,
-            best_by_id = usage_player_id)
-
-bp_per_active <- bp_on_court(team_box_scores,
-                             player_box_scores,
-                             best_player_by_per,
-                             filter_by_col = min,
-                             best_by_id = per_player_id)
-bp_vorp_active <- bp_on_court(team_box_scores,
-                              player_box_scores,
-                              best_player_by_vorp,
-                              filter_by_col = min,
-                              best_by_id = vorp_player_id)
-
-ggplot(bp_usage_active, 
-       aes(x = win,
-           fill = as.factor(best_by_player_avi))) +
-    geom_bar(position = "dodge", color = "black") + 
-    geom_text(stat = "count",
-              aes(label = after_stat(count)),
-              position = position_dodge(width = .9),
-              vjust = -.5) +
-    facet_wrap(~team) +
-    labs(
-        title = "Best Player Effect on Wins",
-        fill = "Best Player Played"
-    )
+summary(team_box_scores)
 ```
 
-```{r eval=FALSE, include=FALSE}
-team_box_scores_final <- team_box_scores %>%
-    left_join(bp_usage_active, )
-```
-
-## Winning Team Characteristics
+### Simple Cleaning
 
 ```{r}
-winning_teams <- team_box_scores %>%
-    filter(win == 1) %>%
-    select(-c(gamedate, opponent, min, usage_rate, homeaway, overtime, team)) %>%
-    group_by(season) %>%
-    summarise(across(everything(), list(
-        mean = \(x) mean(x, na.rm = TRUE)
-        ))) %>%
-    mutate(dataset = "Winning Teams")
+#Coding variable for the outcome of the game
+team_box_scores_1 <- team_box_scores %>%
+    mutate(outcome = factor(if_else(offrating>defrating, "Win", "Loss")))
+team_box_scores_dummy <- team_box_scores %>%
+    select(gamedate,team, opponent, pts) %>%
+    rename("team_dummy"="team", "opponent_dummy"="opponent", "pts_dummy"="pts")
+#Inversely adding opponents points scored during game
+team_box_scores_1 <- team_box_scores_1 %>%
+    left_join(team_box_scores_dummy, 
+              by = c("gamedate","team"="opponent_dummy", "opponent"="team_dummy")) %>%
+    rename("pts_opp"="pts_dummy") %>%
+    select(gamedate, team, opponent, pts, pts_opp, everything()) %>%
+    mutate(gamemargin = pts - pts_opp,
+           blowout_or_close = case_when(
+               gamemargin > 10 ~ "Blowout Win",
+               gamemargin <= 10 & gamemargin > 0 ~ "Close Win",
+               gamemargin < 0 & gamemargin >= -10 ~ "Close Loss",
+               gamemargin < -10 ~ "Blowout Loss"))
+```
 
-losing_teams <- team_box_scores %>%
-    filter(win == 0) %>%
-    select(-c(gamedate, opponent, min, usage_rate, homeaway, overtime, team)) %>%
-    group_by(season) %>%
-    summarise(across(everything(), list(
-        mean = \(x) mean(x, na.rm = TRUE)
-        ))) %>%
-    mutate(dataset = "Losing Teams")
+### Visualizations
 
-outcome_teams <- bind_rows(winning_teams, losing_teams)
+```{r}
+
 ```

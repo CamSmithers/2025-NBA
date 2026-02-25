@@ -6,11 +6,13 @@ team_box_scores <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds")
 team_box_scores_cy <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/TeamBoxOctNov-2526.rds")
+team_box_scores_cy2 <- read_rds(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/TeamBoxDec-2526.rds")
 
 player_box_scores <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/full_box_player.rds")
 
-team_box_scores <- rbind(team_box_scores, team_box_scores_cy)
+team_box_scores <- rbind(team_box_scores, team_box_scores_cy, team_box_scores_cy2)
 
 usdpo <- team_box_scores %>%
     select(gamedate, team, opponent, season, offrating, defrating, pts) %>%
