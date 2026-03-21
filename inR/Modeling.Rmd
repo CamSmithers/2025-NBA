@@ -16,7 +16,7 @@ library(tidyverse)
 library(rsample)
 library(caret)
 library(vip)
-set.seed(123)
+library(ROCR)
 ```
 
 Necessary Data Sets
@@ -63,17 +63,14 @@ win_test <- testing(win_split)
 
 ```{r}
 win_three <- train(
-    win ~ tmsn_netpf + pri_op + pri_dp + pri_pp + team + opponent + season + 
-        tmsn_netpf_opp + pri_op_opp + pri_dp_opp + pri_pp_opp + tmsn_avgposspts +
-        tmsn_avgposspts_opp,
+    win ~ tmsn_avgposspts + tmsn_avgposspts_opp,
     data = usdpo,
     method = "glm",
     family = "binomial",
     trControl = trainControl(method = "cv", number = 10))
 
 win_four <- train(
-    win ~ tmsn_netpf + pri_op + pri_dp + pri_pp + team + opponent + season + 
-        tmsn_netpf_opp + pri_op_opp + pri_dp_opp + pri_pp_opp,
+    win ~ team + opponent + season,
     data = usdpo,
     method = "glm",
     family = "binomial",
@@ -107,6 +104,29 @@ confusionMatrix(
     data = relevel(pred_class, ref = "Win"),
     reference = relevel(win_train$win, ref = "Win")
 )
+```
+
+```{r}
+model1_prob <- predict(win_three, win_train, type = "prob")$Win
+model2_prob <- predict(win_four, win_train, type = "prob")$Win
+model3_prob <- predict(win_five, win_train, type = "prob")$Win
+
+perf1 <- prediction(model1_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+perf2 <- prediction(model2_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+perf3 <- prediction(model3_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+
+plot(perf1, col = "black", lty = 1)
+plot(perf2, col = "blue", add = TRUE, lty = 2)
+plot(perf3, col = "forestgreen", add = TRUE, lty = 3)
+legend(0.8, 0.2, legend = c("win_model1", "win_model2", "win_model3"),
+       col = c("black", "blue", "forestgreen"), lty = 2:1, cex = 0.6)
+```
+
+```{r}
+vip(win_five, num_features = 20)
 ```
 
 ------------------------------------------------------------------------

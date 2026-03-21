@@ -57,5 +57,121 @@ team_box_scores_1 <- team_box_scores_1 %>%
 ### Visualizations
 
 ```{r}
+aesthetic_data <- team_box_scores_1 %>%
+    mutate(
+    team_display = case_when(
+        #Atlantic Division
+        team == "BOS" ~ "Boston Celtics",
+        team == "BRK" ~ "Brooklyn Nets",
+        team == "NYK" ~ "New York Knicks",
+        team == "PHI" ~ "Philadelphia 76ers",
+        team == "TOR" ~ "Toronto Raptors",
+        #Central Division
+        team == "CHI" ~ "Chicago Bulls",
+        team == "CLE" ~ "Cleveland Cavaliers",
+        team == "DET" ~ "Detroit Pistons",
+        team == "IND" ~ "Indiana Pacers",
+        team == "MIL" ~ "Milwaukee Bucks",
+        #Southeast Division
+        team == "ATL" ~ "Atlanta Hawks",
+        team == "CHO" ~ "Charlotte Hornets",
+        team == "MIA" ~ "Miami Heat",
+        team == "ORL" ~ "Orlando Magic",
+        team == "WAS" ~ "Washington Wizards",
+        #Northwest Division
+        team == "DEN" ~ "Denver Nuggets",
+        team == "MIN" ~ "Minnesota Timberwolves",
+        team == "OKC" ~ "Oklahoma City Thunder",
+        team == "POR" ~ "Portland Trail Blazers",
+        team == "UTA" ~ "Utah Jazz",
+        #Pacific Division
+        team == "GSW" ~ "Golden State Warriors",
+        team == "LAC" ~ "Los Angeles Clippers",
+        team == "LAL" ~ "Los Angeles Lakers",
+        team == "PHO" ~ "Phoenix Suns",
+        team == "SAC" ~ "Sacramento Kings",
+        #Southwest Division
+        team == "DAL" ~ "Dallas Mavericks",
+        team == "HOU" ~ "Houston Rockets",
+        team == "MEM" ~ "Memphis Grizzlies",
+        team == "NOP" ~ "New Orleans Pelicans",
+        team == "SAS" ~ "San Antonio Spurs"), 
+    opponent_display = case_when(
+        #Atlantic Division
+        opponent == "BOS" ~ "Boston Celtics",
+        opponent == "BRK" ~ "Brooklyn Nets",
+        opponent == "NYK" ~ "New York Knicks",
+        opponent == "PHI" ~ "Philadelphia 76ers",
+        opponent == "TOR" ~ "Toronto Raptors",
+        #Central Division
+        opponent == "CHI" ~ "Chicago Bulls",
+        opponent == "CLE" ~ "Cleveland Cavaliers",
+        opponent == "DET" ~ "Detroit Pistons",
+        opponent == "IND" ~ "Indiana Pacers",
+        opponent == "MIL" ~ "Milwaukee Bucks",
+        #Southeast Division
+        opponent == "ATL" ~ "Atlanta Hawks",
+        opponent == "CHO" ~ "Charlotte Hornets",
+        opponent == "MIA" ~ "Miami Heat",
+        opponent == "ORL" ~ "Orlando Magic",
+        opponent == "WAS" ~ "Washington Wizards",
+        #Northwest Division
+        opponent == "DEN" ~ "Denver Nuggets",
+        opponent == "MIN" ~ "Minnesota Timberwolves",
+        opponent == "OKC" ~ "Oklahoma City Thunder",
+        opponent == "POR" ~ "Portland Trail Blazers",
+        opponent == "UTA" ~ "Utah Jazz",
+        #Pacific Division
+        opponent == "GSW" ~ "Golden State Warriors",
+        opponent == "LAC" ~ "Los Angeles Clippers",
+        opponent == "LAL" ~ "Los Angeles Lakers",
+        opponent == "PHO" ~ "Phoenix Suns",
+        opponent == "SAC" ~ "Sacramento Kings",
+        #Southwest Division
+        opponent == "DAL" ~ "Dallas Mavericks",
+        opponent == "HOU" ~ "Houston Rockets",
+        opponent == "MEM" ~ "Memphis Grizzlies",
+        opponent == "NOP" ~ "New Orleans Pelicans",
+        opponent == "SAS" ~ "San Antonio Spurs"))
+```
 
+```{r}
+
+```
+
+Wins by Team & Type of Wins by Team
+
+```{r}
+wins_by_season <- ggplot(aesthetic_data %>%
+                             filter(season != 2026),
+                         aes(x = season,
+                             fill = as.factor(outcome))) + 
+    geom_bar(position = "dodge", color = "black") +
+    geom_text(stat = "count", 
+              aes(label = after_stat(count)), 
+              position = position_dodge(width = 0.9), 
+              vjust = -0.25) +
+    facet_wrap(~team_display) +
+    labs(
+        title = "Wins by Team from 2020/2021 to 2024/2025",
+        x = "Game Outcome",
+        y = "Count",
+        fill = "Season") +
+    theme_bw()
+wins_by_season
+
+wins_type_by_season <- ggplot(aesthetic_data %>%
+                                  filter(season != 2026),
+                              aes(x = season,
+                                  fill = as.factor(blowout_or_close))) +
+    geom_bar(position = "dodge", color = "black") +
+    facet_wrap(~team_display) +
+    labs(
+        title = "Type of Win by Team from 2020/2021 to 2024/2025",
+        x = "Game Outcome",
+        y = "Count",
+        fill = "Type of Win") +
+    
+    theme_bw()
+wins_type_by_season
 ```
