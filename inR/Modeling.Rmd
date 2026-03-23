@@ -1,5 +1,5 @@
 ---
-title: "Exploration 2"
+title: "Modeling"
 author: "Cam Smithers"
 date: "`r Sys.Date()`"
 output: html_document
@@ -30,105 +30,41 @@ team_season_stats <- readRDS(
 player_regseason_stats <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/plyr_regsn_stats.rds")
 
-usdpo <- readRDS(
-    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/usdpo.rds")
-```
-
-Summary
-
-I have been running into issues when creating models to predict the outcomes of games. The issue is my model creates predictions where I know what has already happened, I don't know what will happen in a game that has yet to be played. Therefore, I have two methods by which I can approach this problem.
-
-1.  Determine how the team plays on average, then how they play within one and two standard deviations of the mean.
-    1.  Mean: Average or Baseline for Team
-    2.  1 SD: Above/Below Average Performance for Team
-    3.  2 SD: Significantly Above/Below Average Performance for Team
-2.  Use the data from the previous five seasons and the current season to create the models. However, when the models are created the data from the current season have more weight. Having them weigh more will enable a focus on this seasons, while providing historical context. Once the model has been created use the data from the current season to generate fitted values.
-
-------------------------------------------------------------------------
-
-Model 1: Win or Loss
-
-```{r}
-usdpo <- usdpo %>%
-    mutate(win = factor(win, 
-                        levels = c(0, 1),
-                        labels = c("Loss", "Win")))
+team_box_scores <- readRDS(
+    "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds")
 ```
 
 ```{r}
-win_split <- initial_split(usdpo, prop = .7, strata = "win")
-win_train <- training(win_split)
-win_test <- testing(win_split)
+team_box_scores_2 <- team_box_scores %>%
+    mutate(
+        true_oreb_pct = round((oreb_pct * treb_pct) / 100, 1),
+        true_dreb_pct = round((dreb_pct * treb_pct) / 100, 1))
+
+opp_box_data <- team_box_scores %>%
+    select(gamedate, team, pts, fg_pct, threefg_pct, efg_pct) %>%
+    rename_with( ~paste0("opp_", .x), .cols = -c("gamedate", "team"))
+
+team_box_scores_3 <- team_box_scores_2 %>%
+    left_join(opp_box_data, by = c("gamedate", "opponent"="team")) %>%
+    mutate(
+        win = if_else(offrating > defrating, 1, 0),
+        point_diff = pts - opp_pts,
+        outcome_margin = case_when(
+            point_diff >= 10 ~ 0,
+            point_diff < 10 & point_diff > 0 ~ 1,
+            point_diff < 0 & point_diff > -10 ~ 2,
+            point_diff <= -10 ~ 3),
+        win = factor(win,
+                     levels = c(0, 1),
+                     labels = c("Loss", "Win")),
+        outcome_margin = factor(outcome_margin,
+                                levels = c(0, 1, 2, 3),
+                                labels = c("Blowout Win",
+                                           "Close Win",
+                                           "Close Loss",
+                                           "Blowout Loss")))
 ```
 
 ```{r}
-win_three <- train(
-    win ~ tmsn_avgposspts + tmsn_avgposspts_opp,
-    data = usdpo,
-    method = "glm",
-    family = "binomial",
-    trControl = trainControl(method = "cv", number = 10))
 
-win_four <- train(
-    win ~ team + opponent + season,
-    data = usdpo,
-    method = "glm",
-    family = "binomial",
-    trControl = trainControl(method = "cv", number = 10))
-win_five <- train(
-    win ~ tmsn_netpf + pri_op + pri_dp + pri_pp + team + opponent + season + 
-        tmsn_netpf_opp + pri_op_opp + pri_dp_opp + pri_pp_opp + tert_op + tert_dp + 
-        tert_op_opp + tert_dp_opp,
-    data = usdpo,
-    method = "glm",
-    family = "binomial",
-    trControl = trainControl(method = "cv", number = 10))
 ```
-
-```{r}
-summary(
-    resamples(
-        list(
-            model1 = win_three,
-            model2 = win_four,
-            model3 = win_five
-        )
-    )
-)$statistics$Accuracy
-```
-
-```{r}
-pred_class <- predict(win_five, win_train)
-
-confusionMatrix(
-    data = relevel(pred_class, ref = "Win"),
-    reference = relevel(win_train$win, ref = "Win")
-)
-```
-
-```{r}
-model1_prob <- predict(win_three, win_train, type = "prob")$Win
-model2_prob <- predict(win_four, win_train, type = "prob")$Win
-model3_prob <- predict(win_five, win_train, type = "prob")$Win
-
-perf1 <- prediction(model1_prob, win_train$win) %>%
-    performance(measure = "tpr", x.measure = "fpr")
-perf2 <- prediction(model2_prob, win_train$win) %>%
-    performance(measure = "tpr", x.measure = "fpr")
-perf3 <- prediction(model3_prob, win_train$win) %>%
-    performance(measure = "tpr", x.measure = "fpr")
-
-plot(perf1, col = "black", lty = 1)
-plot(perf2, col = "blue", add = TRUE, lty = 2)
-plot(perf3, col = "forestgreen", add = TRUE, lty = 3)
-legend(0.8, 0.2, legend = c("win_model1", "win_model2", "win_model3"),
-       col = c("black", "blue", "forestgreen"), lty = 2:1, cex = 0.6)
-```
-
-```{r}
-vip(win_five, num_features = 20)
-```
-
-------------------------------------------------------------------------
-
-Model 2: Magnitude of Outcome
