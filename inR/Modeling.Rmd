@@ -5,6 +5,8 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+# NBA Statistical Modeling & Prediction
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -17,6 +19,7 @@ library(rsample)
 library(caret)
 library(vip)
 library(ROCR)
+library(nnet)
 ```
 
 Necessary Data Sets
@@ -33,6 +36,8 @@ player_regseason_stats <- readRDS(
 team_box_scores <- readRDS(
     "/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds")
 ```
+
+## Pre-Analysis Cleaning
 
 ```{r}
 team_box_scores_2 <- team_box_scores %>%
@@ -62,9 +67,150 @@ team_box_scores_3 <- team_box_scores_2 %>%
                                 labels = c("Blowout Win",
                                            "Close Win",
                                            "Close Loss",
-                                           "Blowout Loss")))
+                                           "Blowout Loss"))) %>%
+    group_by(team, season) %>%
+    mutate(avg_outcome_margin = round(mean(point_diff), 2))
+```
+
+## Logistic Regression Model Testing
+
+```{r}
+win_split <- initial_split(team_box_scores_3, prop = .65, strata = "win")
+win_train <- training(win_split)
+win_test <- testing(win_split)
 ```
 
 ```{r}
+win_one <- train(
+    win ~ offrating,
+    data = team_box_scores_3,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+win_two <- train(
+    win ~ defrating,
+    data = team_box_scores_3,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+win_three <- train(
+    win ~ threefg_pct + ftar,
+    data = team_box_scores_3,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+win_four <- train(
+    win ~ true_oreb_pct + true_dreb_pct,
+    data = team_box_scores_3,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+win_five <- train(
+    win ~ defrating + threefg_pct + ftar + true_oreb_pct + true_dreb_pct,
+    data = team_box_scores_3,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+```
 
+```{r}
+summary(
+    resamples(
+        list(
+            model1 = win_one,
+            model2 = win_two,
+            model3 = win_three,
+            model4 = win_four,
+            model5 = win_five
+        )
+    )
+)$statistics$Accuracy
+```
+
+### ROC Curve for Logistic Regression Models (Game Outcome Win/Loss)
+
+```{r}
+model1_prob <- predict(win_one, win_train, type = "prob")$Win
+perf1 <- prediction(model1_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+
+model2_prob <- predict(win_two, win_train, type = "prob")$Win
+perf2 <- prediction(model2_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+
+model3_prob <- predict(win_three, win_train, type = "prob")$Win
+perf3 <- prediction(model3_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+
+model4_prob <- predict(win_four, win_train, type = "prob")$Win
+perf4 <- prediction(model4_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+
+model5_prob <- predict(win_five, win_train, type = "prob")$Win
+perf5 <- prediction(model5_prob, win_train$win) %>%
+    performance(measure = "tpr", x.measure = "fpr")
+
+plot(perf1, col = "black", lty = 1)
+plot(perf2, add = TRUE, col = "cornflowerblue", lty = 2)
+plot(perf3, add = TRUE, col = "red3", lty = 2)
+plot(perf4, add = TRUE, col = "magenta2", lty = 2)
+plot(perf5, add = TRUE, col = "gold2", lty = 2)
+legend(0.8, 0.4, legend = c("win_one", "win_two", "win_three", "win_four", "win_five"),
+       col = c("black", "cornflowerblue", "red3", "magenta2", "gold2"), lty = 2:1, cex = 0.6)
+```
+
+------------------------------------------------------------------------
+
+```{r}
+outcome_margin_split <- initial_split(team_box_scores_3, prop = .65, strata = "outcome_margin")
+outcome_margin_train <- training(outcome_margin_split)
+outcome_margin_test <- testing(outcome_margin_split)
+```
+
+```{r}
+outcome_margin_one <- train(
+    outcome_margin ~ offrating + avg_outcome_margin,
+    data = team_box_scores_3,
+    method = "multinom",
+#    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+outcome_margin_two <- train(
+    outcome_margin ~ defrating + avg_outcome_margin,
+    data = team_box_scores_3,
+    method = "multinom",
+#    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+outcome_margin_three <- train(
+    outcome_margin ~ threefg_pct + ftar + avg_outcome_margin,
+    data = team_box_scores_3,
+    method = "multinom",
+#    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+outcome_margin_four <- train(
+    outcome_margin ~ true_oreb_pct + true_dreb_pct + avg_outcome_margin,
+    data = team_box_scores_3,
+    method = "multinom",
+#    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+outcome_margin_five <- train(
+    outcome_margin ~ defrating + threefg_pct + ftar + 
+        true_oreb_pct + true_dreb_pct + avg_outcome_margin,
+    data = team_box_scores_3,
+    method = "multinom",
+#    family = "binomial",
+    trControl = trainControl(method = "cv", number = 10))
+```
+
+```{r}
+summary(
+    resamples(
+        list(
+            model6 = outcome_margin_one,
+            model7 = outcome_margin_two,
+            model8 = outcome_margin_three,
+            model9 = outcome_margin_four,
+            model10 = outcome_margin_five
+        )
+    )
+)$statistics$Accuracy
 ```
