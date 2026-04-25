@@ -24,3 +24,27 @@ team_season_stats_updated <- rbind(og_team_season_stats, add_team_season_stats_2
 saveRDS(
     team_season_stats_updated,
     file = '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/team_season_stats_updated.rds')
+
+og_player_rgsn_stats <-readRDS(
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Original-2024/plyr_regsn_stats.rds')
+
+og_player_pstsn_stats <- readRDS(
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Original-2024/plyr_pstsn_stats.rds')
+
+add_player_rgsn_stats <- readRDS(
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Adding-2425/plyr_regsn_stats_2425.rds')
+
+add_player_pstsn_stats <- readRDS(
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Adding-2425/plyr_pstsn_stats_2425.rds')
+
+full_og_player_stats <- og_player_rgsn_stats %>%
+    left_join(og_player_pstsn_stats, by = c('year','team','name'))
+
+full_add_player_stats <- add_player_rgsn_stats %>%
+    left_join(add_player_pstsn_stats, by = c('year','team','name'))
+
+player_season_stats_updated <- rbind(full_og_player_stats, full_add_player_stats)
+
+saveRDS(
+    player_season_stats_updated,
+    file = '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/player_season_stats_updated.rds')
