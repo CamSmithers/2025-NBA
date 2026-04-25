@@ -52,7 +52,7 @@ best_player_metric <- function(dataset, main_col, x, y) {
     new_col <- paste0(as_label(enquo(main_col)), "_player_id")
     
     dataset %>%
-        filter(minutes > x & usage > y) %>%
+        filter(minutes > x & usage_rate > y) %>%
         group_by(year, team) %>%
         slice_max(order_by = {{main_col}}, n = 1, with_ties = FALSE) %>%
         ungroup() %>%

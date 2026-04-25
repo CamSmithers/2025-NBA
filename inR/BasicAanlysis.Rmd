@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Basic Analysis"
 author: "Cam Smithers"
 date: "`r Sys.Date()`"
 output: pdf_document
@@ -9,13 +9,59 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### Packages
+
+```{r}
+library(tidyverse)
+```
+
+### Functions Script
+
+```{r}
+source('/Users/camsmithers/Desktop/Camalytics/NBA/inR/Functions.R')
+```
+
+### Data Sets
+
+Loading in the data sets that I'll need for analysis.
+
 ```{r}
 team_box_scores <- readRDS(
-    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds')
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/team_box_scores_updated.rds')
 player_box_scores <- readRDS(
     '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/full_box_player_updated.rds')
 team_season_stats <- readRDS(
     '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/team_season_stats_updated.rds')
 player_season_stats <- readRDS(
     '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/player_season_stats_updated.rds')
+```
+
+Applying a function I wrote that fixes some aesthetic issues with player names. This will occur with foreign players that have special characters or foreign characters in their name.
+
+```{r}
+player_box_scores <- fixplayername(player_box_scores)
+player_season_stats <- fixplayername(player_season_stats)
+```
+
+### Outcomes and Small Metrics
+
+I want to look at how missing a player affects the chance of a team to win a game; however, I have to determine which players are important for the outcome of the game. I'm going to look at few metrics and use those to determine a player's significance. For the different metrics, different players may end up being the most important player. Those metrics include...
+
+1.  Win Shares: `ws`
+2.  Value Over Replacement Player (VORP): `vorp`
+3.  Player Efficiency Rating: `player_effrtg`
+
+```{r}
+bp_by_ws <- best_player_metric(player_season_stats, ws, 20, 10)
+bp_by_vorp <- best_player_metric(player_season_stats, vorp, 20, 10)
+bp_by_per <- best_player_metric(player_season_stats, player_effrtg, 20, 10)
+```
+
+Joining the data from the best player by a certain metric data sets to later determine if player was on the court and how that affected the outcome.
+
+```{r}
+team_box_scores_2 <- team_box_scores %>%
+    left_join(bp_by_ws, by = c('team', 'season'='year')) %>%
+    left_join(bp_by_vorp, by = c('team', 'season'='year')) %>%
+    left_join(bp_by_per, by = c('team', 'season'='year'))
 ```
