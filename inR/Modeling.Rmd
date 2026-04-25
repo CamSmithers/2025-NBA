@@ -2,7 +2,7 @@
 title: "Modeling"
 author: "Cam Smithers"
 date: "`r Sys.Date()`"
-output: html_document
+output: pdf_document
 ---
 
 # NBA Statistical Modeling & Prediction
@@ -20,7 +20,6 @@ library(caret)
 library(vip)
 library(ROCR)
 library(nnet)
-#Test
 ```
 
 Necessary Data Sets

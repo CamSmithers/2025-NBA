@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+author: "Cam Smithers"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+-   Team Box Scores (2020 to 2025)
+
+<!-- -->
+
+-   Player Box Scores (Use rbind)
+
+-   Best Player Metrics
+
+    -   Team Season Stats (Regular & Post)
+
+    -   Player Season Stats (Regular & Post)
+
+```{r}
+team_box_scores <- readRDS(
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/team_box_scores_updated.rds')
+player_box_scores <- readRDS(
+    '/Users/camsmithers/Desktop/Camalytics/NBA/Data-NBA/Current/full_box_player_updated.rds')
+```
